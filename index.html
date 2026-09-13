@@ -7,27 +7,29 @@
 <link rel="manifest" href="manifest.json">
 <title>Maintenance Short DPR</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f3f6f8;color:#17212b}
-header{position:sticky;top:0;z-index:5;background:#123b5d;color:#fff;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));box-shadow:0 2px 8px #0002}
-h1{font-size:20px;margin:0 0 3px}.sub{font-size:12px;opacity:.8}
-main{max-width:760px;margin:auto;padding:12px 12px 90px}
-section{background:#fff;border-radius:14px;margin:12px 0;padding:15px;box-shadow:0 1px 5px #0001}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f3f6f8;color:#17212b}
+header{position:sticky;top:0;z-index:20;background:#123b5d;color:white;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));box-shadow:0 2px 8px #0002}
+h1{font-size:20px;margin:0 0 3px}.sub{font-size:12px;opacity:.82}
+#offline{display:none;background:#fff3cd;color:#664d03;padding:8px 12px;text-align:center;font-size:12px;border-bottom:1px solid #e3cf8b}
+main{max-width:760px;margin:auto;padding:10px 12px 100px}
+section{background:white;border-radius:14px;margin:12px 0;padding:15px;box-shadow:0 1px 5px #0001}
 h2{font-size:16px;margin:0 0 12px;color:#123b5d}
-label{font-size:12px;font-weight:650;color:#50606d;display:block;margin:9px 0 5px}
-input,select,textarea{width:100%;font:inherit;border:1px solid #ccd5dc;border-radius:10px;padding:11px;background:#fff}
+label{display:block;font-size:12px;font-weight:650;color:#50606d;margin:9px 0 5px}
+input,select,textarea{width:100%;font:inherit;border:1px solid #ccd5dc;border-radius:10px;padding:11px;background:white}
 textarea{min-height:72px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.card{border:1px solid #dce3e8;border-radius:12px;padding:11px;margin:9px 0}
-.name{font-weight:700;font-size:14px;margin-bottom:8px}.status{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-.status label{margin:0;position:relative}.status input{position:absolute;opacity:0}.status span{display:block;text-align:center;border:1px solid #cbd5dc;border-radius:8px;padding:8px 2px;font-size:12px;font-weight:700}
-.status input:checked+span{background:#123b5d;color:#fff;border-color:#123b5d}
-.btnbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #d9e0e5;padding:9px 12px calc(9px + env(safe-area-inset-bottom));display:flex;gap:8px;z-index:6}
-button{border:0;border-radius:10px;padding:11px 14px;font-weight:750;font-size:14px;background:#123b5d;color:#fff;flex:1}button.secondary{background:#e9eef2;color:#173047}
-table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #e4e9ed;padding:7px 4px;text-align:left;font-size:12px}th{color:#52626e}
-.small{font-size:11px;color:#667781}.danger{color:#a22}
+.card{border:1px solid #dce3e8;border-radius:12px;padding:11px;margin:9px 0}.name{font-weight:700;font-size:14px;margin-bottom:8px}
+.status{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.status label{margin:0;position:relative}
+.status input{position:absolute;opacity:0}.status span{display:block;text-align:center;border:1px solid #cbd5dc;border-radius:8px;padding:9px 2px;font-size:12px;font-weight:750}
+.status input:checked+span{background:#123b5d;color:white;border-color:#123b5d}
+.btnbar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #d9e0e5;padding:9px 12px calc(9px + env(safe-area-inset-bottom));display:flex;gap:8px;z-index:30}
+button{border:0;border-radius:10px;padding:11px 14px;font-weight:750;font-size:14px;background:#123b5d;color:white;flex:1}button.secondary{background:#e9eef2;color:#173047}button.danger{background:#9b2c2c}
+.small{font-size:11px;color:#667781}.toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:#17212b;color:white;padding:10px 14px;border-radius:10px;display:none;z-index:40;font-size:13px}
+@media(max-width:430px){.grid{grid-template-columns:1fr}.status{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
-<header><h1>Maintenance Short DPR</h1><div class="sub">NG-2000-1 • Mobile DPR Form</div></header>
+<header><h1>Maintenance Short DPR</h1><div class="sub">NG-2000-1 • Offline Mobile DPR</div></header>
+<div id="offline">OFFLINE MODE — DPR is saved on this iPhone.</div>
 <main>
 <section><h2>1. RIG Details</h2>
 <div class="grid"><div><label>Date</label><input id="date" type="date"></div><div><label>Time</label><input id="time" type="time"></div></div>
@@ -51,19 +53,14 @@ table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #e4e9ed;
 <div><label>Air Pressure (Kg/cm²)</label><input id="air" inputmode="decimal"></div>
 </div></section>
 
-<section><h2>5. Maintenance Jobs / Issues</h2>
-<div id="jobs"></div><button type="button" onclick="addJob()">+ Add Equipment Job</button></section>
-
+<section><h2>5. Maintenance Jobs / Issues</h2><div id="jobs"></div><button type="button" onclick="addJob()">+ Add Equipment Job</button></section>
 <section><h2>6. Generic Jobs Carried Out</h2><div id="generic"></div><button type="button" onclick="addGeneric()">+ Add Job</button></section>
-
 <section><h2>7. Inventory / Requirement</h2><div id="inventory"></div><button type="button" onclick="addInventory()">+ Add Requirement</button></section>
-
-<section><h2>8. Crew Details</h2>
-<label>Day Shift</label><textarea id="dayShift"></textarea>
-<label>Night Shift</label><textarea id="nightShift"></textarea></section>
+<section><h2>8. Crew Details</h2><label>Day Shift</label><textarea id="dayShift"></textarea><label>Night Shift</label><textarea id="nightShift"></textarea></section>
 </main>
-<div class="btnbar"><button class="secondary" onclick="saveDpr()">Save</button><button onclick="shareDpr()">Share / Export</button></div>
-<div id="offlineBanner" style="display:none;position:sticky;top:0;z-index:10;background:#fff3cd;color:#664d03;padding:8px 12px;font-size:12px;text-align:center;border-bottom:1px solid #ead9a3">OFFLINE MODE — Your DPR is being saved on this device.</div>
+<div class="btnbar"><button class="secondary" onclick="saveDpr()">Save DPR</button><button onclick="shareDpr()">Share Full DPR</button></div>
+<div id="toast" class="toast"></div>
+
 <script>
 const critical=[
 ["Power Pack",["PP-1","PP-2","PP-3","PP-4"]],["Mud Pump",["MP-1","MP-2","MP-2"]],
@@ -74,52 +71,134 @@ const critical=[
 ["Elec. Air. Comp",["EAC-1","EAC-2"]],["DSA Diesel Gen",["ASHOK LEYLAND","MAHINDRA"]],["FGCS",["FGCS"]]
 ];
 const hvac=[["Drill PCR",["HVAC-1","HVAC-2","HVAC-3"]],["Mud PCR",["HVAC-1","HVAC-2","HVAC-3"]],["DCC",["HVAC-1","HVAC-2"]],["AVPH Panel",["HVAC-1"]],["AVPH Dog House",["HVAC-1"]]];
-const opts=["RUN","S/B","U","M"];
-function renderStatus(data,id,prefix){let root=document.getElementById(id);data.forEach(([group,items])=>{let h=document.createElement("div");h.innerHTML=`<div class="card"><div class="name">${group}</div>${items.map((x,i)=>`<div class="card"><div class="small">${x}</div><div class="status">${opts.map(o=>`<label><input type="radio" name="${prefix}_${group}_${i}" value="${o}"><span>${o}</span></label>`).join("")}</div></div>`).join("")}</div>`;root.appendChild(h)})}
+const opts=["RUN","S/B","U/M"];
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function renderStatus(data,id,prefix){
+  const root=document.getElementById(id);
+  data.forEach(([group,items])=>{
+    const box=document.createElement("div");box.className="card";
+    box.innerHTML='<div class="name">'+esc(group)+'</div>';
+    items.forEach((x,i)=>{
+      const sub=document.createElement("div");sub.className="card";
+      const key=prefix+"_"+group.replace(/[^a-z0-9]/gi,"_")+"_"+i;
+      sub.innerHTML='<div class="small">'+esc(x)+'</div><div class="status">'+opts.map(o=>'<label><input type="radio" name="'+key+'" value="'+o+'"><span>'+o+'</span></label>').join("")+'</div>';
+      box.appendChild(sub);
+    });
+    root.appendChild(box);
+  });
+}
 renderStatus(critical,"critical","c");renderStatus(hvac,"hvac","h");
-function addJob(){let d=document.createElement("div");d.className="card";d.innerHTML='<label>Equipment Name</label><input><label>Issues Observed</label><textarea></textarea><label>Jobs Carried Out</label><textarea></textarea><label>Spares Required</label><textarea></textarea>';document.getElementById("jobs").appendChild(d)}
-function addGeneric(){let d=document.createElement("div");d.className="card";d.innerHTML='<label>Job Carried Out</label><textarea></textarea>';document.getElementById("generic").appendChild(d)}
-function addInventory(){let d=document.createElement("div");d.className="card";d.innerHTML='<label>Urgent / Critical Requirement</label><textarea></textarea><label>Materials Received from Base</label><textarea></textarea><label>Materials Sent to Base</label><textarea></textarea>';document.getElementById("inventory").appendChild(d)}
+
+function addJob(data={}){
+ const d=document.createElement("div");d.className="card job";
+ d.innerHTML='<label>Equipment Name</label><input class="je" value="'+esc(data.equipment||"")+'"><label>Issues Observed</label><textarea class="ji">'+esc(data.issues||"")+'</textarea><label>Jobs Carried Out</label><textarea class="jj">'+esc(data.jobs||"")+'</textarea><label>Spares Required</label><textarea class="js">'+esc(data.spares||"")+'</textarea>';
+ document.getElementById("jobs").appendChild(d);
+}
+function addGeneric(data={}){
+ const d=document.createElement("div");d.className="card generic";d.innerHTML='<label>Job Carried Out</label><textarea class="gj">'+esc(data.job||"")+'</textarea>';document.getElementById("generic").appendChild(d);
+}
+function addInventory(data={}){
+ const d=document.createElement("div");d.className="card inventory";
+ d.innerHTML='<label>Urgent / Critical Requirement</label><textarea class="ir">'+esc(data.requirement||"")+'</textarea><label>Materials Received from Base</label><textarea class="imr">'+esc(data.received||"")+'</textarea><label>Materials Sent to Base</label><textarea class="ims">'+esc(data.sent||"")+'</textarea>';
+ document.getElementById("inventory").appendChild(d);
+}
 addJob();addGeneric();addInventory();
-document.getElementById("date").value=new Date().toISOString().slice(0,10);
-document.getElementById("time").value=new Date().toTimeString().slice(0,5);
-function collect(){let o={};document.querySelectorAll("input,select,textarea").forEach((e,i)=>{if(e.type==="radio"){if(e.checked)o["r"+i]=e.value}else if(e.id)o[e.id]=e.value});return o}
-function saveDpr(){
-  const data=collect();
-  data.savedAt=new Date().toISOString();
-  localStorage.setItem("maintenanceDpr",JSON.stringify(data));
-  localStorage.setItem("maintenanceDprSaved","1");
-  alert("DPR saved offline on this device.");
+
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";setTimeout(()=>t.style.display="none",1800)}
+function gather(){
+ const data={};
+ document.querySelectorAll("input[id],select[id],textarea[id]").forEach(e=>data[e.id]=e.value);
+ data.status={};
+ document.querySelectorAll('input[type="radio"]:checked').forEach(e=>data.status[e.name]=e.value);
+ data.jobs=[...document.querySelectorAll(".job")].map(d=>({equipment:d.querySelector(".je").value,issues:d.querySelector(".ji").value,jobs:d.querySelector(".jj").value,spares:d.querySelector(".js").value}));
+ data.generic=[...document.querySelectorAll(".generic")].map(d=>({job:d.querySelector(".gj").value}));
+ data.inventory=[...document.querySelectorAll(".inventory")].map(d=>({requirement:d.querySelector(".ir").value,received:d.querySelector(".imr").value,sent:d.querySelector(".ims").value}));
+ data.savedAt=new Date().toISOString();
+ return data;
 }
-function restoreDpr(){
-  const raw=localStorage.getItem("maintenanceDpr");
-  if(!raw)return;
-  try{
-    const data=JSON.parse(raw);
-    Object.keys(data).forEach(k=>{
-      const e=document.getElementById(k);
-      if(e && e.type!=="radio") e.value=data[k]||"";
-    });
-    // Restore selected status radios by matching their stored sequence keys.
-    Object.keys(data).forEach(k=>{
-      if(k.startsWith("r")){
-        const idx=Number(k.slice(1)), val=data[k];
-        const radios=document.querySelectorAll('input[type="radio"]');
-        if(radios[idx] && radios[idx].value===val) radios[idx].checked=true;
-      }
-    });
-  }catch(e){}
+function apply(data){
+ if(!data)return;
+ Object.keys(data).forEach(k=>{const e=document.getElementById(k);if(e)e.value=data[k]??""});
+ document.querySelectorAll('input[type="radio"]').forEach(e=>{e.checked=data.status?.[e.name]===e.value});
+ document.getElementById("jobs").innerHTML="";(data.jobs||[]).forEach(addJob);
+ document.getElementById("generic").innerHTML="";(data.generic||[]).forEach(addGeneric);
+ document.getElementById("inventory").innerHTML="";(data.inventory||[]).forEach(addInventory);
 }
-function updateOnline(){
-  const b=document.getElementById("offlineBanner");
-  b.style.display=navigator.onLine?"none":"block";
+async function saveDpr(){
+ const data=gather();
+ try{
+   localStorage.setItem("maintenanceDpr",JSON.stringify(data));
+   localStorage.setItem("maintenanceDprSavedAt",data.savedAt);
+   // Verify immediately.
+   const check=localStorage.getItem("maintenanceDpr");
+   if(!check)throw new Error("Storage unavailable");
+   toast("DPR saved on this iPhone");
+ }catch(e){alert("Unable to save this DPR. Please use Safari normally (not Private Browsing) and try again.")}
 }
-window.addEventListener("online",updateOnline);
-window.addEventListener("offline",updateOnline);
-updateOnline();
-restoreDpr();
-async function shareDpr(){let text="Maintenance Short DPR\nRIG: "+document.getElementById("rig").value+"\nDate: "+document.getElementById("date").value+" "+document.getElementById("time").value+"\nCurrent Operation: "+document.getElementById("operation").value; if(navigator.share){try{await navigator.share({title:"Maintenance Short DPR",text})}catch(e){}}else{navigator.clipboard?.writeText(text);alert("DPR summary copied. Full export can be added in the next version.")}}
-document.addEventListener("input",()=>{clearTimeout(window._autosave);window._autosave=setTimeout(()=>localStorage.setItem("maintenanceDpr",JSON.stringify(collect())),400);});
-if("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
+function loadDpr(){
+ try{
+   const raw=localStorage.getItem("maintenanceDpr");
+   if(raw)apply(JSON.parse(raw));
+   else{document.getElementById("date").value=new Date().toISOString().slice(0,10);document.getElementById("time").value=new Date().toTimeString().slice(0,5);}
+ }catch(e){console.log(e)}
+}
+function buildShareText(){
+ const d=gather(), lines=[];
+ lines.push("MAINTENANCE SHORT DPR");
+ lines.push("RIG: "+(d.rig||""));
+ lines.push("DATE & TIME: "+(d.date||"")+" "+(d.time||""));
+ lines.push("SPUD DATE: "+(d.spud||""));
+ lines.push("TARGET DEPTH: "+(d.targetDepth||""));
+ lines.push("CURRENT DEPTH: "+(d.currentDepth||""));
+ lines.push("CURRENT OPERATION: "+(d.operation||""));
+ lines.push("RIG SHUTDOWN STATUS: "+(d.shutdown||""));
+ lines.push("REASON: "+(d.shutdownReason||""));
+ lines.push("");
+ lines.push("CRITICAL EQUIPMENT / HVAC STATUS");
+ document.querySelectorAll('#critical .card.card, #hvac .card.card').forEach(()=>{});
+ const radios={};Object.entries(d.status||{}).forEach(([k,v])=>radios[k]=v);
+ document.querySelectorAll('#critical input[type="radio"],#hvac input[type="radio"]').forEach(r=>{if(r.checked){const parts=r.name.split("_");lines.push(parts.slice(0,-1).join(" ")+" ["+r.value+"]");}});
+ lines.push("");
+ lines.push("CRITICAL OPERATIONAL PARAMETERS");
+ lines.push("Total Energy Generated (MWHr): "+(d.energy||""));
+ lines.push("Total HSD Consumed – Power Pack (KL): "+(d.hsdpp||""));
+ lines.push("Total HSD Issued – DSA Genset (KL): "+(d.hsdgenset||""));
+ lines.push("POL Consumption (Ltr): "+(d.pol||""));
+ lines.push("Grease Consumption (Kg): "+(d.grease||""));
+ lines.push("Air Pressure (Kg/cm²): "+(d.air||""));
+ lines.push("");
+ lines.push("MAINTENANCE JOBS / ISSUES");
+ (d.jobs||[]).forEach((j,i)=>{lines.push((i+1)+". "+j.equipment);lines.push("Issues: "+j.issues);lines.push("Jobs: "+j.jobs);lines.push("Spares: "+j.spares);});
+ lines.push("");
+ lines.push("GENERIC JOBS");
+ (d.generic||[]).forEach((g,i)=>lines.push((i+1)+". "+g.job));
+ lines.push("");
+ lines.push("INVENTORY / REQUIREMENT");
+ (d.inventory||[]).forEach((x,i)=>{lines.push((i+1)+". Requirement: "+x.requirement);lines.push("Received from Base: "+x.received);lines.push("Sent to Base: "+x.sent);});
+ lines.push("");
+ lines.push("CREW DETAILS");
+ lines.push("Day Shift: "+(d.dayShift||""));lines.push("Night Shift: "+(d.nightShift||""));
+ return lines.join("\n");
+}
+async function shareDpr(){
+ const text=buildShareText();
+ try{
+   if(navigator.share){
+     await navigator.share({title:"Maintenance Short DPR",text:text});
+   }else{
+     await navigator.clipboard.writeText(text);toast("Full DPR copied to clipboard");
+   }
+ }catch(e){
+   if(e.name!=="AbortError"){
+     try{await navigator.clipboard.writeText(text);toast("Full DPR copied to clipboard")}catch(_){alert(text)}
+   }
+ }
+}
+function onlineState(){document.getElementById("offline").style.display=navigator.onLine?"none":"block"}
+window.addEventListener("online",onlineState);window.addEventListener("offline",onlineState);onlineState();
+document.addEventListener("change",()=>{clearTimeout(window._saveTimer);window._saveTimer=setTimeout(()=>{try{localStorage.setItem("maintenanceDpr",JSON.stringify(gather()))}catch(e){}},250)});
+loadDpr();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("service-worker.js");
 </script>
-</body></html>
+</body>
+</html>

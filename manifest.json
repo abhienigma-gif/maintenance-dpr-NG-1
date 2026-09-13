@@ -1,12 +1,11 @@
 {
-  "name": "Maintenance Short DPR - Offline",
-  "short_name": "DPR Offline",
+  "name": "Maintenance Short DPR",
+  "short_name": "Maintenance DPR",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f3f6f8",
   "theme_color": "#123b5d",
-  "description": "Offline-first Maintenance Short DPR for NG-2000-1",
   "icons": [
     {
       "src": "icon-192.png",

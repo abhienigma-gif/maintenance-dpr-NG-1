@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#123b5d">
 <link rel="manifest" href="manifest.json">
-<title>Maintenance Short DPR</title>
+<title>Maintenance Short DPR – NG-2000-1</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f3f6f8;color:#17212b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -52,7 +52,7 @@ input,select,textarea{border:0;padding:2px;background:transparent}
 <body>
 <header>
 <h1>Maintenance Short DPR</h1>
-<div class="sub">New Generation Rig • Offline Maintenance Reporting</div>
+<div class="sub">NG-2000-1 • Offline Maintenance Reporting</div>
 </header>
 
 <main>
@@ -144,7 +144,7 @@ input,select,textarea{border:0;padding:2px;background:transparent}
 <button type="button" onclick="newDPR()">＋ New DPR</button>
 <button type="button" onclick="saveDPR()">💾 Save</button>
 <button type="button" class="secondary" onclick="showHistory()">History</button>
-<button type="button" onclick="sharePdf()">📄 PDF / WhatsApp</button>
+<button type="button" onclick="shareWhatsApp()">💬 WhatsApp</button>
 </div>
 
 <script>
@@ -271,7 +271,7 @@ function newDPR(){
 }
 function openDB(){
  return new Promise((resolve,reject)=>{
-  const r=indexedDB.open("maintenance_dpr_db",1);
+  const r=indexedDB.open("maintenance_dpr_db_NG_2000_1",1);
   r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("dprs"))db.createObjectStore("dprs",{keyPath:"id"});};
   r.onsuccess=()=>{db=r.result;resolve(db)}; r.onerror=()=>reject(r.error);
  });
@@ -295,26 +295,108 @@ async function deleteDPR(id){if(!confirm("Delete this saved DPR?"))return;await 
 async function showHistory(){document.getElementById("history").scrollIntoView({behavior:"smooth",block:"start"});await renderHistory();}
 function textReport(d){
  const lines=[];
- lines.push("MAINTENANCE SHORT DPR"); lines.push(`DPR No.: ${d.dprNo}`); lines.push(`RIG: ${d.rig}`);
- lines.push(`DATE & TIME: ${d.fromDT} TO ${d.toDT}`); lines.push(`SPUD DATE: ${d.spudDate}`); lines.push(`TARGET DEPTH: ${d.targetDepth}`); lines.push(`CURRENT DEPTH: ${d.currentDepth}`);
- lines.push(`CURRENT OPERATION: ${d.currentOperation}`); lines.push(`RIG SHUTDOWN STATUS: ${d.shutdown}${d.shutdownReason?` — ${d.shutdownReason}`:""}`);
- lines.push(""); lines.push("CRITICAL OPERATIONAL PARAMETER");
- [["Total Energy Generated",d.energy],["Total HSD Consumed – Power Pack",d.hsdPP],["Total HSD Issued – DSA Genset",d.hsdDSA],["POL Consumption",d.pol],["Grease Consumption",d.grease],["Air Pressure",d.airPressure]].forEach(([a,b])=>lines.push(`${a}: ${b}`));
- lines.push(""); lines.push("MAINTENANCE JOB CARRIED OUT / ISSUES");
- d.maintenance.forEach((x,i)=>lines.push(`${i+1}. ${x.equipment}\nIssues: ${x.issues}\nJobs: ${x.jobs}\nSpares Required: ${x.spares}`));
- lines.push(""); lines.push("GENERIC JOBS CARRIED OUT"); d.generic.forEach((x,i)=>lines.push(`${i+1}. ${x.job}`));
- lines.push(""); lines.push("INVENTORY / REQUIREMENT"); d.inventory.forEach((x,i)=>lines.push(`${i+1}. Requirement: ${x.req}\nReceived from Base: ${x.received}\nSent to Base: ${x.sent}`));
- lines.push(""); lines.push(`CREW DETAILS\nDay Shift: ${d.dayCrew}\nNight Shift: ${d.nightCrew}`);
+ lines.push("MAINTENANCE SHORT DPR");
+ lines.push("================================");
+ lines.push(`DPR No.: ${d.dprNo}`);
+ lines.push(`RIG: ${d.rig}`);
+ lines.push(`DATE & TIME: ${d.fromDT} TO ${d.toDT}`);
+ lines.push(`SPUD DATE: ${d.spudDate}`);
+ lines.push(`TARGET DEPTH: ${d.targetDepth}`);
+ lines.push(`CURRENT DEPTH: ${d.currentDepth}`);
+ lines.push(`CURRENT OPERATION: ${d.currentOperation}`);
+ lines.push(`RIG SHUTDOWN STATUS: ${d.shutdown}${d.shutdownReason?` — ${d.shutdownReason}`:""}`);
+
+ lines.push("");
+ lines.push("CRITICAL EQUIPMENT STATUS");
+ lines.push("--------------------------------");
+ EQUIPMENT.forEach(([group,items])=>{
+   lines.push(group);
+   items.forEach((name,i)=>{
+     const id="eq_"+btoa(unescape(encodeURIComponent(group+"|"+name+"|"+i))).replace(/[^A-Za-z0-9]/g,"");
+     lines.push(`  ${name}: ${d.radios?.[id]||"RUN"}`);
+   });
+ });
+
+ lines.push("");
+ lines.push("HVAC STATUS");
+ lines.push("--------------------------------");
+ HVAC.forEach(([group,items])=>{
+   lines.push(group);
+   items.forEach((name,i)=>{
+     const id="hv_"+btoa(unescape(encodeURIComponent(group+"|"+name+"|"+i))).replace(/[^A-Za-z0-9]/g,"");
+     lines.push(`  ${name}: ${d.radios?.[id]||"RUN"}`);
+   });
+ });
+
+ lines.push("");
+ lines.push("CRITICAL OPERATIONAL PARAMETER");
+ lines.push("--------------------------------");
+ [
+  ["Total Energy Generated",d.energy],
+  ["Total HSD Consumed – Power Pack",d.hsdPP],
+  ["Total HSD Issued – DSA Genset",d.hsdDSA],
+  ["POL Consumption",d.pol],
+  ["Grease Consumption",d.grease],
+  ["Air Pressure",d.airPressure]
+ ].forEach(([a,b])=>lines.push(`${a}: ${b}`));
+
+ lines.push("");
+ lines.push("MAINTENANCE JOB CARRIED OUT / ISSUES (EQUIPMENT SPECIFIC)");
+ lines.push("--------------------------------");
+ if(d.maintenance.length){
+   d.maintenance.forEach((x,i)=>{
+     lines.push(`${i+1}. Equipment: ${x.equipment}`);
+     lines.push(`   Issues Observed: ${x.issues}`);
+     lines.push(`   Jobs Carried out: ${x.jobs}`);
+     lines.push(`   Spares Required: ${x.spares}`);
+   });
+ } else lines.push("No equipment-specific jobs/issues entered.");
+
+ lines.push("");
+ lines.push("GENERIC JOBS CARRIED OUT");
+ lines.push("--------------------------------");
+ if(d.generic.length){
+   d.generic.forEach((x,i)=>lines.push(`${i+1}. ${x.job}`));
+ } else lines.push("No generic jobs entered.");
+
+ lines.push("");
+ lines.push("INVENTORY / REQUIREMENT");
+ lines.push("--------------------------------");
+ if(d.inventory.length){
+   d.inventory.forEach((x,i)=>{
+     lines.push(`${i+1}. Urgent / Critical Requirement: ${x.req}`);
+     lines.push(`   Materials Received from Base: ${x.received}`);
+     lines.push(`   Materials Sent to Base: ${x.sent}`);
+   });
+ } else lines.push("No inventory/requirement entries.");
+
+ lines.push("");
+ lines.push("CREW DETAILS");
+ lines.push("--------------------------------");
+ lines.push(`Day Shift: ${d.dayCrew}`);
+ lines.push(`Night Shift: ${d.nightCrew}`);
+ lines.push("");
+ lines.push("================================");
+ lines.push("END OF DPR");
  return lines.join("\n");
 }
-async function shareText(){const d=collect();const t=textReport(d);if(navigator.share){try{await navigator.share({title:"Maintenance Short DPR",text:t});return}catch(e){}} await navigator.clipboard?.writeText(t);alert("Full DPR text copied to clipboard.");}
-function sharePdf(){
- const d=collect(); const report=textReport(d).replace(/\n/g,"<br>");
- const w=window.open("","_blank");
- if(!w){alert("Please allow pop-ups for this site, then try again.");return}
- w.document.write(`<html><head><title>${esc(d.dprNo)}</title><style>body{font-family:Arial,sans-serif;font-size:12px;line-height:1.4;margin:20px}h1{font-size:18px}h2{font-size:14px;margin-top:16px}</style></head><body><h1>MAINTENANCE SHORT DPR</h1><div>${report}</div><script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`);
- w.document.close();
- setTimeout(()=>{alert("On the iPhone print screen: pinch-out the preview to create the PDF, then tap Share → WhatsApp.");},700);
+async function shareWhatsApp(){
+ const d=collect();
+ const t=textReport(d);
+ if(navigator.share){
+   try{
+     await navigator.share({title:`Maintenance Short DPR – ${d.rig}`,text:t});
+     return;
+   }catch(e){
+     if(e && e.name==="AbortError") return;
+   }
+ }
+ try{
+   await navigator.clipboard.writeText(t);
+   alert("Complete DPR copied to clipboard. Open WhatsApp and paste it into the required chat.");
+ }catch(e){
+   alert("Unable to open the share sheet. Please use Safari and try again.");
+ }
 }
 function init(){
  makeEquipmentStatus();makeHVAC();newDPR();renderHistory();

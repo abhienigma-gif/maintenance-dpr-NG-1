@@ -3,408 +3,193 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#123b5d">
+<meta name="theme-color" content="#0b3d62">
 <link rel="manifest" href="manifest.json">
 <title>Maintenance Short DPR – NG-2000-1</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f3f6f8;color:#17212b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-header{position:sticky;top:0;z-index:20;background:#123b5d;color:#fff;padding:13px 15px;padding-top:max(13px,env(safe-area-inset-top));box-shadow:0 2px 8px #0003}
-header h1{font-size:20px;margin:0 0 3px}.sub{font-size:12px;opacity:.82}
-main{max-width:820px;margin:auto;padding:10px 12px 110px}
-section{background:#fff;border-radius:14px;margin:12px 0;padding:15px;box-shadow:0 1px 5px #0001}
-h2{font-size:16px;margin:0 0 12px;color:#123b5d}
-label{display:block;font-size:12px;font-weight:650;color:#505b66;margin:9px 0 5px}
-input,select,textarea{width:100%;font:inherit;border:1px solid #ccd5dc;border-radius:9px;padding:10px;background:#fff}
-textarea{min-height:76px;resize:vertical}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.card{border:1px solid #dce3e8;border-radius:10px;padding:11px;margin:9px 0}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.equip-title{font-weight:700;font-size:14px;margin-bottom:7px}
-.status{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.status label{margin:0;position:relative}
-.status input{position:absolute;opacity:0}
-.status span{display:block;text-align:center;border:1px solid #cbd5dc;border-radius:8px;padding:9px 3px;background:#fff;font-weight:700;font-size:12px}
-.status input:checked+span{background:#123b5d;color:#fff;border-color:#123b5d}
-.btnbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #d9e0e5;padding:9px 12px;padding-bottom:max(9px,env(safe-area-inset-bottom));display:flex;gap:8px;z-index:30}
-button{border:0;border-radius:10px;padding:11px 13px;font-weight:750;font-size:14px;background:#123b5d;color:#fff;flex:1}
-button.secondary{background:#fff;color:#123b5d;border:1px solid #123b5d}
-button.danger{background:#a32d2d}
-button.small{font-size:12px;padding:8px 10px;flex:0 0 auto}
-.notice{font-size:12px;color:#667481;background:#f6f8fa;padding:9px;border-radius:9px}
-.history-item{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid #dce3e8;border-radius:10px;padding:10px;margin:8px 0}
-.history-meta{min-width:0}.history-meta b{display:block}.history-meta small{color:#667481}
-.actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
-.hidden{display:none!important}
-.kpi{font-size:12px;color:#667481;margin-top:3px}
-@media(max-width:520px){.grid,.row{grid-template-columns:1fr}.btnbar button{font-size:12px;padding:10px 6px}}
-@media print{
-header,.btnbar,.no-print{display:none!important}
-body{background:#fff}.section-print{box-shadow:none;border:0;padding:0;margin:0 0 12px}
-main{padding:0;max-width:none}
-.card{break-inside:avoid}
-input,select,textarea{border:0;padding:2px;background:transparent}
-.status span{border:0;padding:2px;text-align:left}
-.status input:not(:checked)+span{display:none}
-}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#eef3f7;color:#17212b;padding-bottom:90px}
+header{background:#0b3d62;color:white;padding:18px 16px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px #0002}
+header h1{font-size:20px;margin:0 0 4px}header div{font-size:13px;opacity:.9}
+main{max-width:900px;margin:auto;padding:12px}
+.card{background:white;border-radius:12px;margin:10px 0;padding:14px;box-shadow:0 1px 5px #0001}
+h2{font-size:16px;color:#0b3d62;margin:0 0 12px;border-bottom:2px solid #d8e3ec;padding-bottom:7px}
+h3{font-size:14px;margin:14px 0 7px;color:#263746}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}
+label{font-size:12px;font-weight:700;color:#50606d}
+input,textarea,select{font:inherit;width:100%;border:1px solid #b9c6d0;border-radius:8px;padding:9px;background:#fff}
+textarea{min-height:62px;resize:vertical}
+.readonly{background:#f3f6f8}
+.status-group{display:grid;grid-template-columns:1fr auto;gap:7px 10px;align-items:center;border-bottom:1px solid #edf0f2;padding:7px 0}
+.status-name{font-weight:600;font-size:13px}.choices{display:flex;gap:4px;flex-wrap:wrap}
+.choice{display:inline-flex}.choice button{padding:6px 8px;border:1px solid #b9c6d0;border-radius:7px;font-size:12px;background:#fff;color:#17212b}.choice button.selected{background:#0b3d62;color:#fff;border-color:#0b3d62}
+.group-title{font-weight:800;font-size:13px;margin-top:12px;color:#314a5d}
+.row{border:1px solid #d8e0e6;border-radius:10px;padding:10px;margin:9px 0;background:#fbfcfd}
+.rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.rowhead b{font-size:13px}
+button{border:0;border-radius:9px;padding:10px 13px;font-weight:700;font-size:14px;cursor:pointer}
+.add{background:#e8f1f7;color:#0b3d62;border:1px solid #bfd1df}.danger{background:#fff0f0;color:#a11;border:1px solid #e7bcbc}.primary{background:#0b3d62;color:#fff}.secondary{background:#e9eef2;color:#243746}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #ccd6de;padding:8px;display:flex;gap:7px;z-index:20}.bottom button{flex:1;padding:11px 5px;font-size:12px}
+.history-item{border:1px solid #d6dfe5;border-radius:9px;padding:10px;margin:7px 0}.history-actions{display:flex;gap:7px;margin-top:7px}.history-actions button{font-size:12px;padding:7px 10px}
+.small{font-size:11px;color:#667784}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.status-group{grid-template-columns:1fr}.choices{justify-content:flex-start}.bottom button{font-size:11px}}
 </style>
 </head>
 <body>
-<header>
-<h1>Maintenance Short DPR</h1>
-<div class="sub">NG-2000-1 • Offline Maintenance Reporting</div>
-</header>
-
-<main>
-<section class="section-print">
-<h2>DPR Control</h2>
+<header><h1>MAINTENANCE SHORT DPR</h1><div>New Generation Rig • NG-2000-1 • Offline App</div></header>
+<main id="app">
+<section class="card">
+<h2>1. DPR CONTROL / RIG DETAILS</h2>
 <div class="grid">
-<div><label>DPR No.</label><input id="dprNo" readonly></div>
-<div><label>Status</label><input id="saveState" value="New / Unsaved" readonly></div>
-</div>
-<div class="grid">
-<div><label>DATE & TIME – FROM</label><input id="fromDT" type="datetime-local"></div>
-<div><label>DATE & TIME – TO</label><input id="toDT" type="datetime-local"></div>
-</div>
-<div class="grid">
-<div><label>RIG</label><input id="rig" value="NG-2000-1"></div>
-<div><label>SPUD DATE</label><input id="spudDate" type="date"></div>
-</div>
-<div class="grid">
-<div><label>TARGET DEPTH</label><input id="targetDepth"></div>
-<div><label>CURRENT DEPTH</label><input id="currentDepth"></div>
-</div>
-<label>CURRENT OPERATION</label><textarea id="currentOperation"></textarea>
-<div class="card">
-<div class="equip-title">RIG SHUTDOWN STATUS</div>
-<div class="status" id="shutdownStatus">
-<label><input type="radio" name="shutdown" value="YES"><span>YES</span></label>
-<label><input type="radio" name="shutdown" value="NO" checked><span>NO</span></label>
-</div>
-<label>Reason</label><textarea id="shutdownReason"></textarea>
+<div class="field"><label>DPR No.</label><input id="dprNo" type="text"></div>
+<div class="field"><label>RIG</label><input id="rig" class="readonly" value="NG-2000-1" readonly></div>
+<div class="field"><label>FROM DATE & TIME</label><input id="fromDT" type="datetime-local"></div>
+<div class="field"><label>TO DATE & TIME</label><input id="toDT" type="datetime-local"></div>
+<div class="field"><label>SPUD DATE</label><input id="spudDate" type="date"></div>
+<div class="field"><label>TARGET DEPTH</label><input id="targetDepth" type="text"></div>
+<div class="field"><label>CURRENT DEPTH</label><input id="currentDepth" type="text"></div>
+<div class="field"><label>CURRENT OPERATION</label><input id="currentOperation" type="text"></div>
+<div class="field"><label>RIG SHUTDOWN STATUS</label><select id="shutdown"><option value="">Select</option><option>YES</option><option>NO</option></select></div>
+<div class="field"><label>Reason</label><input id="shutdownReason" type="text"></div>
 </div>
 </section>
 
-<section class="section-print">
-<h2>Critical Equipment Status</h2>
-<div id="equipmentStatus"></div>
-</section>
+<section class="card"><h2>2. CRITICAL EQUIPMENT STATUS</h2><div id="equipment"></div></section>
+<section class="card"><h2>3. HVAC STATUS</h2><div id="hvac"></div></section>
 
-<section class="section-print">
-<h2>HVAC Status</h2>
-<div id="hvacStatus"></div>
-</section>
+<section class="card"><h2>4. CRITICAL OPERATIONAL PARAMETERS</h2><div class="grid">
+<div class="field"><label>Total Energy Generated (MWHr)</label><input id="energy"></div>
+<div class="field"><label>Total HSD Consumed – Power Pack (KL)</label><input id="hsdPP"></div>
+<div class="field"><label>Total HSD Issued – DSA Genset (KL)</label><input id="hsdDSA"></div>
+<div class="field"><label>POL Consumption (Ltr)</label><input id="pol"></div>
+<div class="field"><label>Grease Consumption (Kg)</label><input id="grease"></div>
+<div class="field"><label>Air Pressure (Kg/cm²)</label><input id="air"></div>
+</div></section>
 
-<section class="section-print">
-<h2>Critical Operational Parameter</h2>
-<div class="grid">
-<div><label>Total Energy Generated</label><input id="energy"></div>
-<div><label>Total HSD Consumed – Power Pack</label><input id="hsdPP"></div>
-<div><label>Total HSD Issued – DSA Genset</label><input id="hsdDSA"></div>
-<div><label>POL Consumption</label><input id="pol" placeholder="Text + numbers"></div>
-<div><label>Grease Consumption</label><input id="grease" placeholder="Text + numbers"></div>
-<div><label>Air Pressure</label><input id="airPressure"></div>
-</div>
-</section>
-
-<section class="section-print">
-<h2>Maintenance Job carried out / Issues (Equipment Specific)</h2>
+<section class="card"><h2>5. MAINTENANCE JOB / ISSUE — EQUIPMENT SPECIFIC</h2>
 <div id="maintenanceRows"></div>
-<button type="button" class="secondary no-print" onclick="addMaintenanceRow()">+ Add Equipment Job</button>
+<button class="add" id="addMaintenance">＋ Add Maintenance Job</button>
 </section>
 
-<section class="section-print">
-<h2>Generic Jobs Carried out</h2>
-<div id="genericRows"></div>
-<button type="button" class="secondary no-print" onclick="addGenericRow()">+ Add Generic Job</button>
-</section>
+<section class="card"><h2>6. GENERIC JOBS CARRIED OUT</h2><div id="genericRows"></div><button class="add" id="addGeneric">＋ Add Generic Job</button></section>
+<section class="card"><h2>7. INVENTORY / REQUIREMENT</h2><div class="field"><label>URGENT / CRITICAL REQUIREMENT</label><textarea id="criticalRequirement" placeholder="Enter Sr. No. and requirement as required by the team"></textarea></div><div class="field" style="margin-top:10px"><label>MATERIALS RECEIVED FROM BASE</label><textarea id="materialsReceived" placeholder="Enter Sr. No. and materials received as required by the team"></textarea></div><div class="field" style="margin-top:10px"><label>MATERIALS SENT TO BASE</label><textarea id="materialsSent" placeholder="Enter Sr. No. and materials sent as required by the team"></textarea></div></section>
 
-<section class="section-print">
-<h2>Inventory / Requirement</h2>
-<div id="inventoryRows"></div>
-<button type="button" class="secondary no-print" onclick="addInventoryRow()">+ Add Requirement</button>
-</section>
-
-<section class="section-print">
-<h2>Crew Details</h2>
-<div class="grid">
-<div><label>Day Shift</label><textarea id="dayCrew"></textarea></div>
-<div><label>Night Shift</label><textarea id="nightCrew"></textarea></div>
-</div>
-</section>
-
-<section class="no-print">
-<h2>DPR History</h2>
-<div class="notice">Saved DPRs are stored on this device. The app works offline after it has been opened once while online.</div>
-<div id="history"></div>
-</section>
+<section class="card"><h2>8. CREW DETAILS</h2><div class="grid">
+<div class="field"><label>DAY SHIFT</label><textarea id="dayCrew"></textarea></div>
+<div class="field"><label>NIGHT SHIFT</label><textarea id="nightCrew"></textarea></div>
+</div></section>
 </main>
 
-<div class="btnbar">
-<button type="button" onclick="newDPR()">＋ New DPR</button>
-<button type="button" onclick="saveDPR()">💾 Save</button>
-<button type="button" class="secondary" onclick="showHistory()">History</button>
-<button type="button" onclick="shareWhatsApp()">💬 WhatsApp</button>
+<div class="bottom">
+<button class="primary" id="newDpr">＋ New DPR</button><button class="primary" id="save">💾 Save</button><button class="secondary" id="history">History</button><button class="primary" id="whatsapp">💬 WhatsApp</button>
 </div>
 
 <script>
-const EQUIPMENT = [
-["Power Pack",["PP-1","PP-2","PP-3","PP-4"]],
-["Mud Pump",["MP-1","MP-2","MP-2"]],
-["DrawWorks",["DW","DWM-A","DWM-B"]],
-["Travelling Block",["TB"]],
-["Crown Block",["CB"]],
-["TDS",["TDS"]],
-["AVPH",["AVPH"]],
-["ShaleShaker",["SS-1","SS-2","SS-3"]],
-["Mud Cleaner",["MC","DESILTER","DESANDER"]],
-["Mud Mixer",["HPP-1","HPP-2"]],
-["Super Charger",["SC-1","SC-2","SC-3"]],
-["Service HPU",["SHP-1","SHP-2","SHP-3","SHP-4"]],
-["Elec. Air. Comp",["EAC-1","EAC-2"]],
-["DSA Diesel Gen",["ASHOK LEYLAND","MAHINDRA"]],
-["FGCS",["FGCS"]]
+const equipmentGroups=[
+["Power Pack",["PP-1","PP-2","PP-3","PP-4"]],["Mud Pump",["MP-1","MP-2","MP-2"]],
+["DrawWorks",["DW","DWM-A","DWM-B"]],["Travelling Block",["TB"]],["Crown Block",["CB"]],
+["TDS",["TDS"]],["AVPH",["AVPH"]],["ShaleShaker",["SS-1","SS-2","SS-3"]],
+["Mud Cleaner",["MC","DESILTER","DESANDER"]],["Mud Mixer",["HPP-1","HPP-2"]],
+["Super Charger",["SC-1","SC-2","SC-3"]],["Service HPU",["SHP-1","SHP-2","SHP-3","SHP-4"]],
+["Elec. Air. Comp",["EAC-1","EAC-2"]],["DSA Diesel Gen",["ASHOK LEYLAND","MAHINDRA"]],["FGCS",["FGCS"]]
 ];
-const HVAC = [
-["Drill PCR",["HVAC-1","HVAC-2","HVAC-3"]],
-["Mud PCR",["HVAC-1","HVAC-2","HVAC-3"]],
-["DCC",["HVAC-1","HVAC-2"]],
-["AVPH Panel",["HVAC-1"]],
-["AVPH Dog House",["HVAC-1"]]
-];
-let currentId=null, db=null;
+const hvacGroups=[["Drill PCR",["HVAC-1","HVAC-2","HVAC-3"]],["Mud PCR",["HVAC-1","HVAC-2","HVAC-3"]],["DCC",["HVAC-1","HVAC-2"]],["AVPH Panel",["HVAC-1"]],["AVPH Dog House",["HVAC-1"]]];
+let maintenance=[], generic=[]; let equipmentStatus={}, hvacStatus={};
+const dbReq=indexedDB.open("maintenance-dpr-ng2000-1-v6",1);
+dbReq.onupgradeneeded=e=>e.target.result.createObjectStore("dprs",{keyPath:"id"});
+let db=null; dbReq.onsuccess=e=>{db=e.target.result; updateDprNoForDate();};
 
-function formatDateTimeForReport(value){
- if(!value) return "";
- const m=String(value).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
- if(!m) return value;
- return `${m[3]}/${m[2]}/${m[1]} ${m[4]}:${m[5]}`;
+function radioGroup(containerId, groups, prefix, state){
+ const el=document.getElementById(containerId); el.innerHTML="";
+ groups.forEach((g,gi)=>{
+  const t=document.createElement("div");t.className="group-title";t.textContent=(gi+1)+". "+g[0];el.appendChild(t);
+  g[1].forEach((name,ii)=>{
+   const key=prefix+"_"+gi+"_"+ii;
+   const r=document.createElement("div");r.className="status-group";
+   const nameEl=document.createElement("div");nameEl.className="status-name";nameEl.textContent=name;
+   const choices=document.createElement("div");choices.className="choices";
+   ["RUN","S/B","U/M"].forEach(v=>{
+    const wrap=document.createElement("span");wrap.className="choice";
+    const btn=document.createElement("button");btn.type="button";btn.textContent=v;btn.dataset.key=key;btn.dataset.value=v;
+    if(state[key]===v) btn.classList.add("selected");
+    btn.onclick=()=>{state[key]=v; choices.querySelectorAll("button").forEach(b=>b.classList.remove("selected"));btn.classList.add("selected");};
+    wrap.appendChild(btn);choices.appendChild(wrap);
+   });
+   r.appendChild(nameEl);r.appendChild(choices);el.appendChild(r);
+  });
+ });
 }
-function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
-function nowLocal(){
- const d=new Date(), p=n=>String(n).padStart(2,"0");
- return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes());
+radioGroup("equipment",equipmentGroups,"eq",equipmentStatus); radioGroup("hvac",hvacGroups,"hv",hvacStatus);
+function setDefaultDates(){const now=new Date();const pad=n=>String(n).padStart(2,"0");const s=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;fromDT.value=s;toDT.value=s;}
+function dprDateKey(){
+ const v=fromDT.value; return v ? v.slice(0,10) : new Date().toISOString().slice(0,10);
 }
-function nextDprNo(){
- const key="dpr_seq"; let n=Number(localStorage.getItem(key)||"0")+1; localStorage.setItem(key,n);
- const d=new Date(), y=d.getFullYear(), p=String(n).padStart(4,"0"); return `NG-2000-1/${y}/${p}`;
+function makeDprNo(dateKey, seq){
+ const [y,m,d]=dateKey.split("-");
+ return `NG-1-${d}${m}${y}-${seq}`;
 }
-function makeEquipmentStatus(){
- let h="";
- EQUIPMENT.forEach(([group,items])=>{
-  h+=`<div class="card"><div class="equip-title">${esc(group)}</div>`;
-  items.forEach((name,i)=>{
-   const id="eq_"+btoa(unescape(encodeURIComponent(group+"|"+name+"|"+i))).replace(/[^A-Za-z0-9]/g,"");
-   h+=`<div class="card"><div class="equip-title">${esc(name)}</div><div class="status">`+
-   ["RUN","S/B","U/M"].map((v,j)=>`<label><input type="radio" name="${id}" value="${v}"><span>${v}</span></label>`).join("")+
-   `</div></div>`;
-  }); h+="</div>";
- }); document.getElementById("equipmentStatus").innerHTML=h;
-}
-function makeHVAC(){
- let h="";
- HVAC.forEach(([group,items])=>{
-  h+=`<div class="card"><div class="equip-title">${esc(group)}</div>`;
-  items.forEach((name,i)=>{
-   const id="hv_"+btoa(unescape(encodeURIComponent(group+"|"+name+"|"+i))).replace(/[^A-Za-z0-9]/g,"");
-   h+=`<div class="card"><div class="equip-title">${esc(name)}</div><div class="status">`+
-   ["RUN","S/B","U/M"].map((v,j)=>`<label><input type="radio" name="${id}" value="${v}"><span>${v}</span></label>`).join("")+
-   `</div></div>`;
-  }); h+="</div>";
- }); document.getElementById("hvacStatus").innerHTML=h;
-}
-function addMaintenanceRow(data={}){
- const d=document.createElement("div"); d.className="card maintenance-row";
- d.innerHTML=`<div class="row">
-<label>Equipment Name<input type="text" class="m-eq" value="${esc(data.equipment)}" placeholder="Enter equipment name"></label>
-<label>Spares Required<input class="m-spares" value="${esc(data.spares)}"></label>
-</div>
-<label>Issues Observed<textarea class="m-issues">${esc(data.issues)}</textarea></label>
-<label>Jobs Carried out<textarea class="m-jobs">${esc(data.jobs)}</textarea></label>
-<button type="button" class="danger small no-print" onclick="this.parentElement.remove()">Remove</button>`;
- document.getElementById("maintenanceRows").appendChild(d);
- d.querySelector(".m-eq").value=data.equipment||"";
-}
-function addGenericRow(data={}){
- const d=document.createElement("div"); d.className="card generic-row";
- d.innerHTML=`<label>Jobs Carried out<textarea class="g-job">${esc(data.job)}</textarea></label><button type="button" class="danger small no-print" onclick="this.parentElement.remove()">Remove</button>`;
- document.getElementById("genericRows").appendChild(d);
-}
-function addInventoryRow(data={}){
- const d=document.createElement("div"); d.className="card inventory-row";
- d.innerHTML=`<label>Urgent / Critical Requirement<textarea class="i-req">${esc(data.req)}</textarea></label>
-<label>Materials Received from Base<textarea class="i-received">${esc(data.received)}</textarea></label>
-<label>Materials Sent to Base<textarea class="i-sent">${esc(data.sent)}</textarea></label>
-<button type="button" class="danger small no-print" onclick="this.parentElement.remove()">Remove</button>`;
- document.getElementById("inventoryRows").appendChild(d);
-}
-function collect(){
- const q=id=>document.getElementById(id)?.value||"";
- const shutdown=document.querySelector('input[name="shutdown"]:checked')?.value||"NO";
- const radios={};
- document.querySelectorAll('#equipmentStatus input[type=radio]:checked,#hvacStatus input[type=radio]:checked').forEach(x=>radios[x.name]=x.value);
- return {
-  id:currentId||crypto.randomUUID(), dprNo:q("dprNo"), fromDT:q("fromDT"), toDT:q("toDT"), rig:q("rig"), spudDate:q("spudDate"),
-  targetDepth:q("targetDepth"), currentDepth:q("currentDepth"), currentOperation:q("currentOperation"),
-  shutdown, shutdownReason:q("shutdownReason"), radios, energy:q("energy"), hsdPP:q("hsdPP"), hsdDSA:q("hsdDSA"),
-  pol:q("pol"), grease:q("grease"), airPressure:q("airPressure"),
-  maintenance:[...document.querySelectorAll(".maintenance-row")].map(r=>({equipment:r.querySelector(".m-eq")?.value||"",issues:r.querySelector(".m-issues")?.value||"",jobs:r.querySelector(".m-jobs")?.value||"",spares:r.querySelector(".m-spares")?.value||""})),
-  generic:[...document.querySelectorAll(".generic-row")].map(r=>({job:r.querySelector(".g-job")?.value||""})),
-  inventory:[...document.querySelectorAll(".inventory-row")].map(r=>({req:r.querySelector(".i-req")?.value||"",received:r.querySelector(".i-received")?.value||"",sent:r.querySelector(".i-sent")?.value||""})),
-  dayCrew:q("dayCrew"), nightCrew:q("nightCrew"), updatedAt:new Date().toISOString()
+function updateDprNoForDate(){
+ if(!db){dprNo.value=makeDprNo(dprDateKey(),1);return;}
+ const key=dprDateKey();
+ const req=db.transaction("dprs").objectStore("dprs").getAll();
+ req.onsuccess=()=>{
+  const nums=req.result.filter(x=>(x.fromDT||"").slice(0,10)===key).map(x=>{
+   const m=String(x.dprNo||"").match(/-(\d+)$/); return m?Number(m[1]):0;
+  }).filter(n=>n>0);
+  const seq=(nums.length?Math.max(...nums):0)+1;
+  dprNo.value=makeDprNo(key,seq);
  };
 }
-function fill(d){
- currentId=d.id; document.getElementById("dprNo").value=d.dprNo||nextDprNo(); document.getElementById("saveState").value="Saved / Editing";
- ["fromDT","toDT","rig","spudDate","targetDepth","currentDepth","currentOperation","shutdownReason","energy","hsdPP","hsdDSA","pol","grease","airPressure","dayCrew","nightCrew"].forEach(id=>{if(document.getElementById(id))document.getElementById(id).value=d[id]||""});
- document.querySelectorAll('input[name="shutdown"]').forEach(x=>x.checked=x.value===d.shutdown);
- document.querySelectorAll('#equipmentStatus input[type=radio],#hvacStatus input[type=radio]').forEach(x=>x.checked=(d.radios?.[x.name]||"RUN")===x.value);
- document.getElementById("maintenanceRows").innerHTML=""; document.getElementById("genericRows").innerHTML=""; document.getElementById("inventoryRows").innerHTML="";
- (d.maintenance||[]).forEach(addMaintenanceRow); (d.generic||[]).forEach(addGenericRow); (d.inventory||[]).forEach(addInventoryRow);
- renderHistory();
+function clearStatuses(){document.querySelectorAll('input[type=radio]').forEach(x=>x.checked=false);}
+function resetForm(){
+ document.querySelectorAll("input,textarea,select").forEach(x=>{if(x.id!=="rig") x.value=""});
+ rig.value="NG-2000-1"; setDefaultDates();
+ updateDprNoForDate();
+ equipmentStatus={}; hvacStatus={};
+ radioGroup("equipment",equipmentGroups,"eq",equipmentStatus); radioGroup("hvac",hvacGroups,"hv",hvacStatus);
+ maintenance=[];generic=[];renderMaintenance();renderGeneric();
+ criticalRequirement.value="";materialsReceived.value="";materialsSent.value="";
 }
-function newDPR(){
- currentId=null; document.getElementById("dprNo").value=nextDprNo(); document.getElementById("saveState").value="New / Unsaved";
- document.getElementById("fromDT").value=nowLocal(); document.getElementById("toDT").value=nowLocal();
- ["spudDate","targetDepth","currentDepth","currentOperation","shutdownReason","energy","hsdPP","hsdDSA","pol","grease","airPressure","dayCrew","nightCrew"].forEach(id=>document.getElementById(id).value="");
- document.getElementById("rig").value="NG-2000-1"; document.querySelector('input[name="shutdown"][value="NO"]').checked=true;
- document.querySelectorAll('#equipmentStatus input[type=radio],#hvacStatus input[type=radio]').forEach(x=>x.checked=false);
- document.getElementById("maintenanceRows").innerHTML=""; document.getElementById("genericRows").innerHTML=""; document.getElementById("inventoryRows").innerHTML="";
- addMaintenanceRow(); addGenericRow(); addInventoryRow(); window.scrollTo({top:0,behavior:"smooth"});
-}
-function openDB(){
- return new Promise((resolve,reject)=>{
-  const r=indexedDB.open("maintenance_dpr_db_NG_2000_1",1);
-  r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("dprs"))db.createObjectStore("dprs",{keyPath:"id"});};
-  r.onsuccess=()=>{db=r.result;resolve(db)}; r.onerror=()=>reject(r.error);
+function renderMaintenance(){
+ const el=maintenanceRows;el.innerHTML="";
+ if(!maintenance.length) addMaintenanceRow(false);
+ maintenance.forEach((r,i)=>{
+  const div=document.createElement("div");div.className="row";div.innerHTML=`<div class="rowhead"><b>Sr. No. ${i+1}</b>${maintenance.length>1?'<button class="danger" type="button">Remove</button>':''}</div>
+  <div class="field"><label>Equipment Name</label><input class="m-eq" value="${esc(r.eq)}"></div>
+  <div class="field"><label>Issues Observed</label><textarea class="m-issue">${esc(r.issue)}</textarea></div>
+  <div class="field"><label>Jobs Carried Out</label><textarea class="m-job">${esc(r.job)}</textarea></div>
+  <div class="field"><label>Spares Required</label><textarea class="m-spare">${esc(r.spare)}</textarea></div>`;
+  div.querySelectorAll("input,textarea").forEach((x,j)=>x.addEventListener("input",()=>{let k=["eq","issue","job","spare"][j];r[k]=x.value;}));
+  const rm=div.querySelector(".danger");if(rm)rm.onclick=()=>{maintenance.splice(i,1);renderMaintenance()};
+  el.appendChild(div);
  });
 }
-async function saveDPR(){
- const d=collect(); await openDB();
- await new Promise((res,rej)=>{const tx=db.transaction("dprs","readwrite");tx.objectStore("dprs").put(d);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});
- currentId=d.id; document.getElementById("saveState").value="Saved / Offline";
- renderHistory(); alert("DPR saved on this device.");
+function addMaintenanceRow(render=true){maintenance.push({eq:"",issue:"",job:"",spare:""});if(render)renderMaintenance()}
+function renderGeneric(){genericRows.innerHTML="";if(!generic.length)generic.push("");generic.forEach((v,i)=>{const d=document.createElement("div");d.className="row";d.innerHTML=`<div class="rowhead"><b>Sr. No. ${i+1}</b>${generic.length>1?'<button class="danger" type="button">Remove</button>':''}</div><textarea>${esc(v)}</textarea>`;d.querySelector("textarea").oninput=e=>generic[i]=e.target.value;let b=d.querySelector("button");if(b)b.onclick=()=>{generic.splice(i,1);renderGeneric()};genericRows.appendChild(d)})}
+function renderRows(){renderMaintenance();renderGeneric();}
+function esc(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+addMaintenance.onclick=()=>addMaintenanceRow(true);addGeneric.onclick=()=>{generic.push("");renderGeneric()};
+newDpr.onclick=resetForm; fromDT.addEventListener("change",updateDprNoForDate);
+function data(){
+ return {id:Date.now(),dprNo:dprNo.value,rig:rig.value,fromDT:fromDT.value,toDT:toDT.value,spudDate:spudDate.value,targetDepth:targetDepth.value,currentDepth:currentDepth.value,currentOperation:currentOperation.value,shutdown:shutdown.value,shutdownReason:shutdownReason.value,radios:{...equipmentStatus,...hvacStatus},energy:energy.value,hsdPP:hsdPP.value,hsdDSA:hsdDSA.value,pol:pol.value,grease:grease.value,air:air.value,maintenance,generic,criticalRequirement:criticalRequirement.value,materialsReceived:materialsReceived.value,materialsSent:materialsSent.value,dayCrew:dayCrew.value,nightCrew:nightCrew.value};
 }
-async function getAll(){
- await openDB(); return new Promise((res,rej)=>{const r=db.transaction("dprs","readonly").objectStore("dprs").getAll();r.onsuccess=()=>res(r.result.sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))));r.onerror=()=>rej(r.error)});
+save.onclick=()=>{if(!db)return alert("Database is still starting. Try again.");const d=data();const tx=db.transaction("dprs","readwrite");tx.objectStore("dprs").put(d);tx.oncomplete=()=>alert("DPR saved: "+d.dprNo)};
+function fmt(v){if(!v)return "";const d=new Date(v);if(isNaN(d))return v;const p=n=>String(n).padStart(2,"0");return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;}
+function statusText(name, value){return `${name}: ${value||"—"}`;}
+function report(d){
+ const lines=["MAINTENANCE SHORT DPR","RIG: "+d.rig,"DPR No.: "+d.dprNo,"DATE & TIME: "+fmt(d.fromDT)+" TO "+fmt(d.toDT),"SPUD DATE: "+d.spudDate,"TARGET DEPTH: "+d.targetDepth,"CURRENT DEPTH: "+d.currentDepth,"CURRENT OPERATION: "+d.currentOperation,"RIG SHUTDOWN STATUS: "+(d.shutdown||"—"),"Reason: "+(d.shutdownReason||"—"),"","2. CRITICAL EQUIPMENT STATUS"];
+ equipmentGroups.forEach((g,gi)=>{lines.push((gi+1)+". "+g[0]);g[1].forEach((n,ii)=>lines.push(statusText(n,d.radios["eq_"+gi+"_"+ii])))});
+ lines.push("","3. HVAC STATUS");hvacGroups.forEach((g,gi)=>{lines.push((gi+1)+". "+g[0]);g[1].forEach((n,ii)=>lines.push(statusText(n,d.radios["hv_"+gi+"_"+ii])));});
+ lines.push("","4. CRITICAL OPERATIONAL PARAMETERS","Total Energy Generated (MWHr): "+d.energy,"Total HSD Consumed – Power Pack (KL): "+d.hsdPP,"Total HSD Issued – DSA Genset (KL): "+d.hsdDSA,"POL Consumption (Ltr): "+d.pol,"Grease Consumption (Kg): "+d.grease,"Air Pressure (Kg/cm²): "+d.air,"","5. MAINTENANCE JOB / ISSUE — EQUIPMENT SPECIFIC");
+ d.maintenance.forEach((r,i)=>{lines.push("Sr. No.: "+(i+1),"Equipment Name: "+r.eq,"Issues Observed: "+r.issue,"Jobs Carried Out: "+r.job,"Spares Required: "+r.spare,"")});
+ lines.push("6. GENERIC JOBS CARRIED OUT");d.generic.forEach((x,i)=>lines.push((i+1)+". "+x));
+ lines.push("","7. INVENTORY / REQUIREMENT","URGENT / CRITICAL REQUIREMENT:",d.criticalRequirement||"—","","MATERIALS RECEIVED FROM BASE:",d.materialsReceived||"—","","MATERIALS SENT TO BASE:",d.materialsSent||"—");
+ lines.push("8. CREW DETAILS","DAY SHIFT: "+d.dayCrew,"NIGHT SHIFT: "+d.nightCrew,"","END OF DPR");return lines.join("\n");
 }
-async function renderHistory(){
- const el=document.getElementById("history"); const arr=await getAll(); 
- if(!arr.length){el.innerHTML='<div class="notice">No saved DPRs yet.</div>';return}
- el.innerHTML=arr.map(d=>`<div class="history-item"><div class="history-meta"><b>${esc(d.dprNo||"Unnamed DPR")}</b><small>${esc(d.rig||"")} • ${new Date(d.updatedAt).toLocaleString()}</small></div><div class="actions"><button class="small" onclick="openDPR('${d.id}')">Open</button><button class="small danger" onclick="deleteDPR('${d.id}')">Delete</button></div></div>`).join("");
-}
-async function openDPR(id){const arr=await getAll(),d=arr.find(x=>x.id===id);if(d)fill(d);window.scrollTo({top:0,behavior:"smooth"});}
-async function deleteDPR(id){if(!confirm("Delete this saved DPR?"))return;await openDB();await new Promise((res,rej)=>{const tx=db.transaction("dprs","readwrite");tx.objectStore("dprs").delete(id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});if(currentId===id)newDPR();renderHistory();}
-async function showHistory(){document.getElementById("history").scrollIntoView({behavior:"smooth",block:"start"});await renderHistory();}
-function textReport(d){
- const lines=[];
- lines.push("MAINTENANCE SHORT DPR");
- lines.push("================================");
- lines.push(`DPR No.: ${d.dprNo}`);
- lines.push(`RIG: ${d.rig}`);
- lines.push(`DATE & TIME: ${formatDateTimeForReport(d.fromDT)} TO ${formatDateTimeForReport(d.toDT)}`);
- lines.push(`SPUD DATE: ${d.spudDate}`);
- lines.push(`TARGET DEPTH: ${d.targetDepth}`);
- lines.push(`CURRENT DEPTH: ${d.currentDepth}`);
- lines.push(`CURRENT OPERATION: ${d.currentOperation}`);
- lines.push(`RIG SHUTDOWN STATUS: ${d.shutdown}`);\n lines.push(`Reason: ${d.shutdownReason}`);
-
- lines.push("");
- lines.push("CRITICAL EQUIPMENT STATUS");
- lines.push("--------------------------------");
- EQUIPMENT.forEach(([group,items])=>{
-   lines.push(group);
-   items.forEach((name,i)=>{
-     const id="eq_"+btoa(unescape(encodeURIComponent(group+"|"+name+"|"+i))).replace(/[^A-Za-z0-9]/g,"");
-     lines.push(`  ${name}: ${d.radios?.[id]||"RUN"}`);
-   });
- });
-
- lines.push("");
- lines.push("HVAC STATUS");
- lines.push("--------------------------------");
- HVAC.forEach(([group,items])=>{
-   lines.push(group);
-   items.forEach((name,i)=>{
-     const id="hv_"+btoa(unescape(encodeURIComponent(group+"|"+name+"|"+i))).replace(/[^A-Za-z0-9]/g,"");
-     lines.push(`  ${name}: ${d.radios?.[id]||"RUN"}`);
-   });
- });
-
- lines.push("");
- lines.push("CRITICAL OPERATIONAL PARAMETER");
- lines.push("--------------------------------");
- [
-  ["Total Energy Generated",d.energy],
-  ["Total HSD Consumed – Power Pack",d.hsdPP],
-  ["Total HSD Issued – DSA Genset",d.hsdDSA],
-  ["POL Consumption",d.pol],
-  ["Grease Consumption",d.grease],
-  ["Air Pressure",d.airPressure]
- ].forEach(([a,b])=>lines.push(`${a}: ${b}`));
-
- lines.push("");
- lines.push("MAINTENANCE JOB CARRIED OUT / ISSUES (EQUIPMENT SPECIFIC)");
- lines.push("--------------------------------");
- if(d.maintenance.length){
-   d.maintenance.forEach((x,i)=>{
-     lines.push(`${i+1}. Equipment: ${x.equipment}`);
-     lines.push(`   Issues Observed: ${x.issues}`);
-     lines.push(`   Jobs Carried out: ${x.jobs}`);
-     lines.push(`   Spares Required: ${x.spares}`);
-   });
- } else lines.push("No equipment-specific jobs/issues entered.");
-
- lines.push("");
- lines.push("GENERIC JOBS CARRIED OUT");
- lines.push("--------------------------------");
- if(d.generic.length){
-   d.generic.forEach((x,i)=>lines.push(`${i+1}. ${x.job}`));
- } else lines.push("No generic jobs entered.");
-
- lines.push("");
- lines.push("INVENTORY / REQUIREMENT");
- lines.push("--------------------------------");
- if(d.inventory.length){
-   d.inventory.forEach((x,i)=>{
-     lines.push(`${i+1}. Urgent / Critical Requirement: ${x.req}`);
-     lines.push(`   Materials Received from Base: ${x.received}`);
-     lines.push(`   Materials Sent to Base: ${x.sent}`);
-   });
- } else lines.push("No inventory/requirement entries.");
-
- lines.push("");
- lines.push("CREW DETAILS");
- lines.push("--------------------------------");
- lines.push(`Day Shift: ${d.dayCrew}`);
- lines.push(`Night Shift: ${d.nightCrew}`);
- lines.push("");
- lines.push("================================");
- lines.push("END OF DPR");
- return lines.join("\n");
-}
-async function shareWhatsApp(){
- const d=collect();
- const t=textReport(d);
- if(navigator.share){
-   try{
-     await navigator.share({title:`Maintenance Short DPR – ${d.rig}`,text:t});
-     return;
-   }catch(e){
-     if(e && e.name==="AbortError") return;
-   }
- }
- try{
-   await navigator.clipboard.writeText(t);
-   alert("Complete DPR copied to clipboard. Open WhatsApp and paste it into the required chat.");
- }catch(e){
-   alert("Unable to open the share sheet. Please use Safari and try again.");
- }
-}
-function init(){
- makeEquipmentStatus();makeHVAC();newDPR();renderHistory();
-}
-init();
+whatsapp.onclick=async()=>{const text=report(data());try{if(navigator.share)await navigator.share({title:"Maintenance Short DPR",text});else throw 0}catch(e){await navigator.clipboard.writeText(text);alert("Complete DPR copied. Paste it into WhatsApp.");}};
+history.onclick=()=>{if(!db)return;const req=db.transaction("dprs").objectStore("dprs").getAll();req.onsuccess=()=>{const arr=req.result.sort((a,b)=>b.id-a.id);const w=window.open("","_blank");w.document.write("<title>DPR History</title><h2>Maintenance DPR History – NG-2000-1</h2>");arr.forEach(d=>w.document.write(`<div style="border:1px solid #ccc;padding:10px;margin:8px;font-family:Arial"><b>${esc(d.dprNo)}</b><br>${esc(fmt(d.fromDT))}<br><button onclick='window.opener.loadDpr(${d.id});window.close()'>Open</button> <button onclick='window.opener.deleteDpr(${d.id});window.close()'>Delete</button></div>`));}};
+window.loadDpr=id=>{const r=db.transaction("dprs").objectStore("dprs").get(id);r.onsuccess=()=>{const d=r.result;if(!d)return;Object.entries(d).forEach(([k,v])=>{const x=document.getElementById(k);if(x && !["criticalRequirement","materialsReceived","materialsSent"].includes(k))x.value=v??""});maintenance=d.maintenance||[];generic=d.generic||[];equipmentStatus={};hvacStatus={};Object.entries(d.radios||{}).forEach(([k,v])=>{if(k.startsWith("eq_"))equipmentStatus[k]=v;else if(k.startsWith("hv_"))hvacStatus[k]=v});radioGroup("equipment",equipmentGroups,"eq",equipmentStatus);radioGroup("hvac",hvacGroups,"hv",hvacStatus);criticalRequirement.value=d.criticalRequirement||"";materialsReceived.value=d.materialsReceived||"";materialsSent.value=d.materialsSent||"";renderRows()}};
+window.deleteDpr=id=>{db.transaction("dprs","readwrite").objectStore("dprs").delete(id);alert("DPR deleted.")};
+resetForm();renderRows();
+if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").catch(()=>{}));
 </script>
-</body>
-</html>
+</body></html>

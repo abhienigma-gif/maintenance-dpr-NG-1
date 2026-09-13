@@ -32,7 +32,7 @@ button{border:0;border-radius:9px;padding:10px 13px;font-weight:700;font-size:14
 .history-item{border:1px solid #d6dfe5;border-radius:9px;padding:10px;margin:7px 0}.history-actions{display:flex;gap:7px;margin-top:7px}.history-actions button{font-size:12px;padding:7px 10px}
 .small{font-size:11px;color:#667784}
 @media(max-width:600px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.status-group{grid-template-columns:1fr}.choices{justify-content:flex-start}.bottom button{font-size:11px}}
-</style>
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;padding:20px}.modal.show{display:flex;align-items:center;justify-content:center}.modal-box{background:#fff;width:min(680px,100%);max-height:85vh;overflow:auto;border-radius:14px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.25)}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.history-item{border:1px solid #d6dfe5;border-radius:9px;padding:10px;margin:7px 0}.history-actions{display:flex;gap:7px;margin-top:7px}.history-actions button{font-size:12px;padding:7px 10px}.close-btn{background:#eee;color:#222}</style>
 </head>
 <body>
 <header><h1>MAINTENANCE SHORT DPR</h1><div>New Generation Rig • NG-2000-1 • Offline App</div></header>
@@ -83,6 +83,7 @@ button{border:0;border-radius:9px;padding:10px 13px;font-weight:700;font-size:14
 <button class="primary" id="newDpr">＋ New DPR</button><button class="primary" id="save">💾 Save</button><button class="secondary" id="history">History</button><button class="primary" id="whatsapp">💬 WhatsApp</button>
 </div>
 
+<div class="modal" id="historyModal"><div class="modal-box"><div class="modal-head"><h2 style="margin:0">DPR History</h2><button type="button" class="close-btn" id="closeHistory">Close</button></div><div id="historyList"></div></div></div>
 <script>
 const equipmentGroups=[
 ["Power Pack",["PP-1","PP-2","PP-3","PP-4"]],["Mud Pump",["MP-1","MP-2","MP-2"]],
@@ -186,7 +187,29 @@ function report(d){
  lines.push("8. CREW DETAILS","DAY SHIFT: "+d.dayCrew,"NIGHT SHIFT: "+d.nightCrew,"","END OF DPR");return lines.join("\n");
 }
 whatsapp.onclick=async()=>{const text=report(data());try{if(navigator.share)await navigator.share({title:"Maintenance Short DPR",text});else throw 0}catch(e){await navigator.clipboard.writeText(text);alert("Complete DPR copied. Paste it into WhatsApp.");}};
-history.onclick=()=>{if(!db)return;const req=db.transaction("dprs").objectStore("dprs").getAll();req.onsuccess=()=>{const arr=req.result.sort((a,b)=>b.id-a.id);const w=window.open("","_blank");w.document.write("<title>DPR History</title><h2>Maintenance DPR History – NG-2000-1</h2>");arr.forEach(d=>w.document.write(`<div style="border:1px solid #ccc;padding:10px;margin:8px;font-family:Arial"><b>${esc(d.dprNo)}</b><br>${esc(fmt(d.fromDT))}<br><button onclick='window.opener.loadDpr(${d.id});window.close()'>Open</button> <button onclick='window.opener.deleteDpr(${d.id});window.close()'>Delete</button></div>`));}};
+function showHistory(){
+ if(!db)return alert("Database is still starting. Try again.");
+ const req=db.transaction("dprs").objectStore("dprs").getAll();
+ req.onsuccess=()=>{
+  const arr=req.result.sort((a,b)=>b.id-a.id);
+  document.getElementById("historyList").innerHTML="";
+  if(!arr.length){document.getElementById("historyList").innerHTML="<p>No saved DPRs yet.</p>";}
+  arr.forEach(d=>{
+   const item=document.createElement("div"); item.className="history-item";
+   item.innerHTML=`<b>${esc(d.dprNo)}</b><br>${esc(fmt(d.fromDT))} TO ${esc(fmt(d.toDT))}`;
+   const actions=document.createElement("div"); actions.className="history-actions";
+   const openBtn=document.createElement("button"); openBtn.type="button"; openBtn.textContent="Open"; openBtn.className="primary";
+   openBtn.onclick=()=>{loadDpr(d.id);document.getElementById("historyModal").classList.remove("show");};
+   const delBtn=document.createElement("button"); delBtn.type="button"; delBtn.textContent="Delete"; delBtn.className="danger";
+   delBtn.onclick=()=>{if(confirm("Delete "+d.dprNo+"?")){const tx=db.transaction("dprs","readwrite");tx.objectStore("dprs").delete(d.id);tx.oncomplete=showHistory;}};
+   actions.append(openBtn,delBtn); item.appendChild(actions); document.getElementById("historyList").appendChild(item);
+  });
+  document.getElementById("historyModal").classList.add("show");
+ };
+}
+document.getElementById("history").onclick=showHistory;
+document.getElementById("closeHistory").onclick=()=>document.getElementById("historyModal").classList.remove("show");
+document.getElementById("historyModal").addEventListener("click",e=>{const m=document.getElementById("historyModal");if(e.target===m)m.classList.remove("show")});
 window.loadDpr=id=>{const r=db.transaction("dprs").objectStore("dprs").get(id);r.onsuccess=()=>{const d=r.result;if(!d)return;Object.entries(d).forEach(([k,v])=>{const x=document.getElementById(k);if(x && !["criticalRequirement","materialsReceived","materialsSent"].includes(k))x.value=v??""});maintenance=d.maintenance||[];generic=d.generic||[];equipmentStatus={};hvacStatus={};Object.entries(d.radios||{}).forEach(([k,v])=>{if(k.startsWith("eq_"))equipmentStatus[k]=v;else if(k.startsWith("hv_"))hvacStatus[k]=v});radioGroup("equipment",equipmentGroups,"eq",equipmentStatus);radioGroup("hvac",hvacGroups,"hv",hvacStatus);criticalRequirement.value=d.criticalRequirement||"";materialsReceived.value=d.materialsReceived||"";materialsSent.value=d.materialsSent||"";renderRows()}};
 window.deleteDpr=id=>{db.transaction("dprs","readwrite").objectStore("dprs").delete(id);alert("DPR deleted.")};
 resetForm();renderRows();

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#123b5d">
+<link rel="manifest" href="manifest.json">
+<title>Maintenance Short DPR</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f3f6f8;color:#17212b}
+header{position:sticky;top:0;z-index:5;background:#123b5d;color:#fff;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));box-shadow:0 2px 8px #0002}
+h1{font-size:20px;margin:0 0 3px}.sub{font-size:12px;opacity:.8}
+main{max-width:760px;margin:auto;padding:12px 12px 90px}
+section{background:#fff;border-radius:14px;margin:12px 0;padding:15px;box-shadow:0 1px 5px #0001}
+h2{font-size:16px;margin:0 0 12px;color:#123b5d}
+label{font-size:12px;font-weight:650;color:#50606d;display:block;margin:9px 0 5px}
+input,select,textarea{width:100%;font:inherit;border:1px solid #ccd5dc;border-radius:10px;padding:11px;background:#fff}
+textarea{min-height:72px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{border:1px solid #dce3e8;border-radius:12px;padding:11px;margin:9px 0}
+.name{font-weight:700;font-size:14px;margin-bottom:8px}.status{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.status label{margin:0;position:relative}.status input{position:absolute;opacity:0}.status span{display:block;text-align:center;border:1px solid #cbd5dc;border-radius:8px;padding:8px 2px;font-size:12px;font-weight:700}
+.status input:checked+span{background:#123b5d;color:#fff;border-color:#123b5d}
+.btnbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #d9e0e5;padding:9px 12px calc(9px + env(safe-area-inset-bottom));display:flex;gap:8px;z-index:6}
+button{border:0;border-radius:10px;padding:11px 14px;font-weight:750;font-size:14px;background:#123b5d;color:#fff;flex:1}button.secondary{background:#e9eef2;color:#173047}
+table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #e4e9ed;padding:7px 4px;text-align:left;font-size:12px}th{color:#52626e}
+.small{font-size:11px;color:#667781}.danger{color:#a22}
+</style>
+</head>
+<body>
+<header><h1>Maintenance Short DPR</h1><div class="sub">NG-2000-1 • Mobile DPR Form</div></header>
+<main>
+<section><h2>1. RIG Details</h2>
+<div class="grid"><div><label>Date</label><input id="date" type="date"></div><div><label>Time</label><input id="time" type="time"></div></div>
+<label>RIG</label><input id="rig" value="NG-2000-1">
+<label>Spud Date</label><input id="spud" type="date">
+<div class="grid"><div><label>Target Depth</label><input id="targetDepth"></div><div><label>Current Depth</label><input id="currentDepth"></div></div>
+<label>Current Operation</label><textarea id="operation"></textarea>
+<label>Rig Shutdown Status</label><select id="shutdown"><option value="">Select</option><option>YES</option><option>NO</option></select>
+<label>Reason</label><textarea id="shutdownReason"></textarea></section>
+
+<section><h2>2. Critical Equipment Status</h2><div id="critical"></div></section>
+<section><h2>3. HVAC Status</h2><div id="hvac"></div></section>
+
+<section><h2>4. Critical Operational Parameters</h2>
+<div class="grid">
+<div><label>Total Energy Generated (MWHr)</label><input id="energy" inputmode="decimal"></div>
+<div><label>Total HSD Consumed – Power Pack (KL)</label><input id="hsdpp" inputmode="decimal"></div>
+<div><label>Total HSD Issued – DSA Genset (KL)</label><input id="hsdgenset" inputmode="decimal"></div>
+<div><label>POL Consumption (Ltr)</label><input id="pol" inputmode="decimal"></div>
+<div><label>Grease Consumption (Kg)</label><input id="grease" inputmode="decimal"></div>
+<div><label>Air Pressure (Kg/cm²)</label><input id="air" inputmode="decimal"></div>
+</div></section>
+
+<section><h2>5. Maintenance Jobs / Issues</h2>
+<div id="jobs"></div><button type="button" onclick="addJob()">+ Add Equipment Job</button></section>
+
+<section><h2>6. Generic Jobs Carried Out</h2><div id="generic"></div><button type="button" onclick="addGeneric()">+ Add Job</button></section>
+
+<section><h2>7. Inventory / Requirement</h2><div id="inventory"></div><button type="button" onclick="addInventory()">+ Add Requirement</button></section>
+
+<section><h2>8. Crew Details</h2>
+<label>Day Shift</label><textarea id="dayShift"></textarea>
+<label>Night Shift</label><textarea id="nightShift"></textarea></section>
+</main>
+<div class="btnbar"><button class="secondary" onclick="saveDpr()">Save</button><button onclick="shareDpr()">Share / Export</button></div>
+<div id="offlineBanner" style="display:none;position:sticky;top:0;z-index:10;background:#fff3cd;color:#664d03;padding:8px 12px;font-size:12px;text-align:center;border-bottom:1px solid #ead9a3">OFFLINE MODE — Your DPR is being saved on this device.</div>
+<script>
+const critical=[
+["Power Pack",["PP-1","PP-2","PP-3","PP-4"]],["Mud Pump",["MP-1","MP-2","MP-2"]],
+["DrawWorks",["DW","DWM-A","DWM-B"]],["Travelling Block",["TB"]],["Crown Block",["CB"]],
+["TDS",["TDS"]],["AVPH",["AVPH"]],["ShaleShaker",["SS-1","SS-2","SS-3"]],
+["Mud Cleaner",["MC","DESILTER","DESANDER"]],["Mud Mixer",["HPP-1","HPP-2"]],
+["Super Charger",["SC-1","SC-2","SC-3"]],["Service HPU",["SHP-1","SHP-2","SHP-3","SHP-4"]],
+["Elec. Air. Comp",["EAC-1","EAC-2"]],["DSA Diesel Gen",["ASHOK LEYLAND","MAHINDRA"]],["FGCS",["FGCS"]]
+];
+const hvac=[["Drill PCR",["HVAC-1","HVAC-2","HVAC-3"]],["Mud PCR",["HVAC-1","HVAC-2","HVAC-3"]],["DCC",["HVAC-1","HVAC-2"]],["AVPH Panel",["HVAC-1"]],["AVPH Dog House",["HVAC-1"]]];
+const opts=["RUN","S/B","U","M"];
+function renderStatus(data,id,prefix){let root=document.getElementById(id);data.forEach(([group,items])=>{let h=document.createElement("div");h.innerHTML=`<div class="card"><div class="name">${group}</div>${items.map((x,i)=>`<div class="card"><div class="small">${x}</div><div class="status">${opts.map(o=>`<label><input type="radio" name="${prefix}_${group}_${i}" value="${o}"><span>${o}</span></label>`).join("")}</div></div>`).join("")}</div>`;root.appendChild(h)})}
+renderStatus(critical,"critical","c");renderStatus(hvac,"hvac","h");
+function addJob(){let d=document.createElement("div");d.className="card";d.innerHTML='<label>Equipment Name</label><input><label>Issues Observed</label><textarea></textarea><label>Jobs Carried Out</label><textarea></textarea><label>Spares Required</label><textarea></textarea>';document.getElementById("jobs").appendChild(d)}
+function addGeneric(){let d=document.createElement("div");d.className="card";d.innerHTML='<label>Job Carried Out</label><textarea></textarea>';document.getElementById("generic").appendChild(d)}
+function addInventory(){let d=document.createElement("div");d.className="card";d.innerHTML='<label>Urgent / Critical Requirement</label><textarea></textarea><label>Materials Received from Base</label><textarea></textarea><label>Materials Sent to Base</label><textarea></textarea>';document.getElementById("inventory").appendChild(d)}
+addJob();addGeneric();addInventory();
+document.getElementById("date").value=new Date().toISOString().slice(0,10);
+document.getElementById("time").value=new Date().toTimeString().slice(0,5);
+function collect(){let o={};document.querySelectorAll("input,select,textarea").forEach((e,i)=>{if(e.type==="radio"){if(e.checked)o["r"+i]=e.value}else if(e.id)o[e.id]=e.value});return o}
+function saveDpr(){
+  const data=collect();
+  data.savedAt=new Date().toISOString();
+  localStorage.setItem("maintenanceDpr",JSON.stringify(data));
+  localStorage.setItem("maintenanceDprSaved","1");
+  alert("DPR saved offline on this device.");
+}
+function restoreDpr(){
+  const raw=localStorage.getItem("maintenanceDpr");
+  if(!raw)return;
+  try{
+    const data=JSON.parse(raw);
+    Object.keys(data).forEach(k=>{
+      const e=document.getElementById(k);
+      if(e && e.type!=="radio") e.value=data[k]||"";
+    });
+    // Restore selected status radios by matching their stored sequence keys.
+    Object.keys(data).forEach(k=>{
+      if(k.startsWith("r")){
+        const idx=Number(k.slice(1)), val=data[k];
+        const radios=document.querySelectorAll('input[type="radio"]');
+        if(radios[idx] && radios[idx].value===val) radios[idx].checked=true;
+      }
+    });
+  }catch(e){}
+}
+function updateOnline(){
+  const b=document.getElementById("offlineBanner");
+  b.style.display=navigator.onLine?"none":"block";
+}
+window.addEventListener("online",updateOnline);
+window.addEventListener("offline",updateOnline);
+updateOnline();
+restoreDpr();
+async function shareDpr(){let text="Maintenance Short DPR\nRIG: "+document.getElementById("rig").value+"\nDate: "+document.getElementById("date").value+" "+document.getElementById("time").value+"\nCurrent Operation: "+document.getElementById("operation").value; if(navigator.share){try{await navigator.share({title:"Maintenance Short DPR",text})}catch(e){}}else{navigator.clipboard?.writeText(text);alert("DPR summary copied. Full export can be added in the next version.")}}
+document.addEventListener("input",()=>{clearTimeout(window._autosave);window._autosave=setTimeout(()=>localStorage.setItem("maintenanceDpr",JSON.stringify(collect())),400);});
+if("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
+</script>
+</body></html>

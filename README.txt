@@ -24,3 +24,7 @@ Do not use Private Browsing for offline storage.
 Rig-specific build: NG-2000-1
 
 Maintenance equipment name is a free-text field; users enter the equipment name manually.
+
+Status buttons default to NONE on a new DPR; the team must select RUN, S/B, or U/M manually.
+
+Date/time is displayed in WhatsApp as DD/MM/YYYY HH:mm TO DD/MM/YYYY HH:mm. Shutdown status and Reason are on separate lines.

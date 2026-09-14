@@ -60,6 +60,7 @@ button{border:0;border-radius:9px;padding:10px 13px;font-weight:700;font-size:14
 <div class="field"><label>Total Energy Generated (MWHr)</label><input id="energy"></div>
 <div class="field"><label>Total HSD Consumed – Power Pack (KL)</label><input id="hsdPP"></div>
 <div class="field"><label>Total HSD Issued – DSA Genset (KL)</label><input id="hsdDSA"></div>
+<div class="field"><label>HSD Issued to Other Dept (KL)</label><input id="hsdOther"></div>
 <div class="field"><label>POL Consumption (Ltr)</label><input id="pol"></div>
 <div class="field"><label>Grease Consumption (Kg)</label><input id="grease"></div>
 <div class="field"><label>Air Pressure (Kg/cm²)</label><input id="air"></div>
@@ -86,12 +87,12 @@ button{border:0;border-radius:9px;padding:10px 13px;font-weight:700;font-size:14
 <div class="modal" id="historyModal"><div class="modal-box"><div class="modal-head"><h2 style="margin:0">DPR History</h2><button type="button" class="close-btn" id="closeHistory">Close</button></div><div id="historyList"></div></div></div>
 <script>
 const equipmentGroups=[
-["Power Pack",["PP-1","PP-2","PP-3","PP-4"]],["Mud Pump",["MP-1","MP-2","MP-4"]],
+["Power Pack",["PP-1","PP-2","PP-3","PP-4"]],["Mud Pump",["MP-1","MP-2","MP-3"]],
 ["DrawWorks",["DW","DWM-A","DWM-B"]],["Travelling Block",["TB"]],["Crown Block",["CB"]],
 ["TDS",["TDS"]],["AVPH",["AVPH"]],["ShaleShaker",["SS-1","SS-2","SS-3"]],
 ["Mud Cleaner",["MC","DESILTER","DESANDER"]],["Mud Mixer",["HPP-1","HPP-2"]],
 ["Super Charger",["SC-1","SC-2","SC-3"]],["Service HPU",["SHP-1","SHP-2","SHP-3","SHP-4"]],
-["Elec. Air. Comp",["EAC-1","EAC-2"]],["DSA Diesel Gen",["ASHOK LEYLAND","MAHINDRA"]],["FGCS",["FGCS"]]
+["Elec. Air. Comp",["EAC-1","EAC-2"]],["DSA Diesel Gen",["ASHOK LEYLAND","MAHINDRA"]],["FGCS",["FGCS"]],["NGR",["NGR"]]
 ];
 const hvacGroups=[["Drill PCR",["HVAC-1","HVAC-2","HVAC-3"]],["Mud PCR",["HVAC-1","HVAC-2","HVAC-3"]],["DCC",["HVAC-1","HVAC-2"]],["AVPH Panel",["HVAC-1"]],["AVPH Dog House",["HVAC-1"]]];
 let maintenance=[], generic=[]; let equipmentStatus={}, hvacStatus={};
@@ -108,7 +109,7 @@ function radioGroup(containerId, groups, prefix, state){
    const r=document.createElement("div");r.className="status-group";
    const nameEl=document.createElement("div");nameEl.className="status-name";nameEl.textContent=name;
    const choices=document.createElement("div");choices.className="choices";
-   ["RUN","S/B","U/M"].forEach(v=>{
+   (g[0]==="NGR"?["In Service","Bypass"]:["RUN","S/B","U/M"]).forEach(v=>{
     const wrap=document.createElement("span");wrap.className="choice";
     const btn=document.createElement("button");btn.type="button";btn.textContent=v;btn.dataset.key=key;btn.dataset.value=v;
     if(state[key]===v) btn.classList.add("selected");
@@ -171,7 +172,7 @@ function esc(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").
 addMaintenance.onclick=()=>addMaintenanceRow(true);addGeneric.onclick=()=>{generic.push("");renderGeneric()};
 newDpr.onclick=resetForm; fromDT.addEventListener("change",updateDprNoForDate);
 function data(){
- return {id:Date.now(),dprNo:dprNo.value,rig:rig.value,fromDT:fromDT.value,toDT:toDT.value,spudDate:spudDate.value,targetDepth:targetDepth.value,currentDepth:currentDepth.value,currentOperation:currentOperation.value,shutdown:shutdown.value,shutdownReason:shutdownReason.value,radios:{...equipmentStatus,...hvacStatus},energy:energy.value,hsdPP:hsdPP.value,hsdDSA:hsdDSA.value,pol:pol.value,grease:grease.value,air:air.value,maintenance,generic,criticalRequirement:criticalRequirement.value,materialsReceived:materialsReceived.value,materialsSent:materialsSent.value,dayCrew:dayCrew.value,nightCrew:nightCrew.value};
+ return {id:Date.now(),dprNo:dprNo.value,rig:rig.value,fromDT:fromDT.value,toDT:toDT.value,spudDate:spudDate.value,targetDepth:targetDepth.value,currentDepth:currentDepth.value,currentOperation:currentOperation.value,shutdown:shutdown.value,shutdownReason:shutdownReason.value,radios:{...equipmentStatus,...hvacStatus},energy:energy.value,hsdPP:hsdPP.value,hsdDSA:hsdDSA.value,hsdOther:hsdOther.value,pol:pol.value,grease:grease.value,air:air.value,maintenance,generic,criticalRequirement:criticalRequirement.value,materialsReceived:materialsReceived.value,materialsSent:materialsSent.value,dayCrew:dayCrew.value,nightCrew:nightCrew.value};
 }
 save.onclick=()=>{if(!db)return alert("Database is still starting. Try again.");const d=data();const tx=db.transaction("dprs","readwrite");tx.objectStore("dprs").put(d);tx.oncomplete=()=>alert("DPR saved: "+d.dprNo)};
 function fmt(v){if(!v)return "";const d=new Date(v);if(isNaN(d))return v;const p=n=>String(n).padStart(2,"0");return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;}
@@ -180,7 +181,7 @@ function report(d){
  const lines=["MAINTENANCE SHORT DPR","RIG: "+d.rig,"DPR No.: "+d.dprNo,"DATE & TIME: "+fmt(d.fromDT)+" TO "+fmt(d.toDT),"SPUD DATE: "+d.spudDate,"TARGET DEPTH: "+d.targetDepth,"CURRENT DEPTH: "+d.currentDepth,"CURRENT OPERATION: "+d.currentOperation,"RIG SHUTDOWN STATUS: "+(d.shutdown||"—"),"Reason: "+(d.shutdownReason||"—"),"","2. CRITICAL EQUIPMENT STATUS"];
  equipmentGroups.forEach((g,gi)=>{lines.push((gi+1)+". "+g[0]);g[1].forEach((n,ii)=>lines.push(statusText(n,d.radios["eq_"+gi+"_"+ii])))});
  lines.push("","3. HVAC STATUS");hvacGroups.forEach((g,gi)=>{lines.push((gi+1)+". "+g[0]);g[1].forEach((n,ii)=>lines.push(statusText(n,d.radios["hv_"+gi+"_"+ii])));});
- lines.push("","4. CRITICAL OPERATIONAL PARAMETERS","Total Energy Generated (MWHr): "+d.energy,"Total HSD Consumed – Power Pack (KL): "+d.hsdPP,"Total HSD Issued – DSA Genset (KL): "+d.hsdDSA,"POL Consumption (Ltr): "+d.pol,"Grease Consumption (Kg): "+d.grease,"Air Pressure (Kg/cm²): "+d.air,"","5. MAINTENANCE JOB / ISSUE — EQUIPMENT SPECIFIC");
+ lines.push("","4. CRITICAL OPERATIONAL PARAMETERS","Total Energy Generated (MWHr): "+d.energy,"Total HSD Consumed – Power Pack (KL): "+d.hsdPP,"Total HSD Issued – DSA Genset (KL): "+d.hsdDSA,"HSD Issued to Other Dept (KL): "+d.hsdOther,"POL Consumption (Ltr): "+d.pol,"Grease Consumption (Kg): "+d.grease,"Air Pressure (Kg/cm²): "+d.air,"","5. MAINTENANCE JOB / ISSUE — EQUIPMENT SPECIFIC");
  d.maintenance.forEach((r,i)=>{lines.push("Sr. No.: "+(i+1),"Equipment Name: "+r.eq,"Issues Observed: "+r.issue,"Jobs Carried Out: "+r.job,"Spares Required: "+r.spare,"")});
  lines.push("6. GENERIC JOBS CARRIED OUT");d.generic.forEach((x,i)=>lines.push((i+1)+". "+x));
  lines.push("","7. INVENTORY / REQUIREMENT","URGENT / CRITICAL REQUIREMENT:",d.criticalRequirement||"—","","MATERIALS RECEIVED FROM BASE:",d.materialsReceived||"—","","MATERIALS SENT TO BASE:",d.materialsSent||"—");

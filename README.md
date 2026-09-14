@@ -1,9 +1,10 @@
-Maintenance Short DPR – NG-2000-1 V7 FIXED
+Maintenance Short DPR – NG-2000-1 V9
 
-Fixes in V7:
-- Equipment/HVAC status buttons now update immediately and are saved/loaded reliably.
-- New DPR clears all equipment and HVAC statuses.
-- Inventory is split into three independent text boxes: Urgent/Critical Requirement, Materials Received from Base, Materials Sent to Base.
-- No inventory Sr. No. is generated; the team enters Sr. No. manually in each box if required.
-- Complete DPR can be shared through WhatsApp.
-- No PDF option.
+Based on the approved NG-2000-1 V8 baseline.
+
+V9 changes:
+- Corrected the third Mud Pump tag from MP-2 to MP-3.
+- Added NGR (Nitrogen Generator) under Critical Equipment Status.
+- NGR has exactly two button choices: In Service and Bypass. It does not use RUN/S/B/U/M.
+- Added HSD Issued to Other Dept (in KL) as a value-only Critical Operational Parameter.
+- All other V8 logic and features remain unchanged.

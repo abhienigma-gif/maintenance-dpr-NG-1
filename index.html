@@ -30,7 +30,7 @@ button{border:0;border-radius:9px;padding:10px 13px;font-weight:700;font-size:14
 .add{background:#e8f1f7;color:#0b3d62;border:1px solid #bfd1df}.danger{background:#fff0f0;color:#a11;border:1px solid #e7bcbc}.primary{background:#0b3d62;color:#fff}.secondary{background:#e9eef2;color:#243746}
 .bottom{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #ccd6de;padding:8px;display:flex;gap:7px;z-index:20}.bottom button{flex:1;padding:11px 5px;font-size:12px}
 .history-item{border:1px solid #d6dfe5;border-radius:9px;padding:10px;margin:7px 0}.history-actions{display:flex;gap:7px;margin-top:7px}.history-actions button{font-size:12px;padding:7px 10px}
-.small{font-size:11px;color:#667784}
+.small{font-size:11px;color:#667784}.maintenance-table{width:100%;border-collapse:collapse;font-size:13px}.maintenance-table th,.maintenance-table td{border:1px solid #d8e0e6;padding:8px;vertical-align:top;text-align:left}.maintenance-table th{background:#eef4f8;color:#314a5d;font-weight:800}.maintenance-table td:first-child{width:58px;text-align:center}.maintenance-table td:nth-child(2){width:28%}.maintenance-table td:last-child{width:78px;text-align:center}.maintenance-table textarea{min-height:120px}.maintenance-table input,.maintenance-table textarea{margin:0}@media(max-width:600px){.maintenance-table,.maintenance-table thead,.maintenance-table tbody,.maintenance-table tr,.maintenance-table th,.maintenance-table td{display:block}.maintenance-table thead{display:none}.maintenance-table tr{border:1px solid #d8e0e6;border-radius:10px;margin:9px 0;padding:8px;background:#fbfcfd}.maintenance-table td{border:0;padding:6px 2px;width:auto!important;text-align:left!important}.maintenance-table td:before{content:attr(data-label);display:block;font-size:11px;font-weight:800;color:#50606d;margin-bottom:4px}.maintenance-table td:first-child:before{content:"Sl. No."}.maintenance-table textarea{min-height:150px}}
 @media(max-width:600px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.status-group{grid-template-columns:1fr}.choices{justify-content:flex-start}.bottom button{font-size:11px}}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;padding:20px}.modal.show{display:flex;align-items:center;justify-content:center}.modal-box{background:#fff;width:min(680px,100%);max-height:85vh;overflow:auto;border-radius:14px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.25)}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.history-item{border:1px solid #d6dfe5;border-radius:9px;padding:10px;margin:7px 0}.history-actions{display:flex;gap:7px;margin-top:7px}.history-actions button{font-size:12px;padding:7px 10px}.close-btn{background:#eee;color:#222}</style>
 </head>
@@ -96,7 +96,7 @@ const equipmentGroups=[
 ];
 const hvacGroups=[["Drill PCR",["HVAC-1","HVAC-2","HVAC-3"]],["Mud PCR",["HVAC-1","HVAC-2","HVAC-3"]],["DCC",["HVAC-1","HVAC-2"]],["AVPH Panel",["HVAC-1"]],["AVPH Dog House",["HVAC-1"]]];
 let maintenance=[], generic=[]; let equipmentStatus={}, hvacStatus={};
-const dbReq=indexedDB.open("maintenance-dpr-ng2000-1-v6",1);
+const dbReq=indexedDB.open("maintenance-dpr-ng2000-2-v6",1);
 dbReq.onupgradeneeded=e=>e.target.result.createObjectStore("dprs",{keyPath:"id"});
 let db=null; dbReq.onsuccess=e=>{db=e.target.result; updateDprNoForDate();};
 
@@ -123,23 +123,35 @@ function radioGroup(containerId, groups, prefix, state){
 radioGroup("equipment",equipmentGroups,"eq",equipmentStatus); radioGroup("hvac",hvacGroups,"hv",hvacStatus);
 function setDefaultDates(){const now=new Date();const pad=n=>String(n).padStart(2,"0");const s=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;fromDT.value=s;toDT.value=s;}
 function dprDateKey(){
- const v=fromDT.value; return v ? v.slice(0,10) : new Date().toISOString().slice(0,10);
+ const v=toDT.value || fromDT.value; return v ? v.slice(0,10) : new Date().toISOString().slice(0,10);
 }
-function makeDprNo(dateKey, seq){
+function dprShiftSuffix(){
+ const f=fromDT.value, t=toDT.value;
+ if(!f || !t) return "";
+ const fd=new Date(f), td=new Date(t);
+ if(Number.isNaN(fd.getTime()) || Number.isNaN(td.getTime())) return "";
+ const fDate=new Date(fd.getFullYear(),fd.getMonth(),fd.getDate());
+ const tDate=new Date(td.getFullYear(),td.getMonth(),td.getDate());
+ const dayDiff=Math.round((tDate-fDate)/86400000);
+ const startHour=fd.getHours();
+ const endHour=td.getHours();
+ const startAM=startHour < 12;
+ const startPM=startHour >= 12;
+ const endAM=endHour < 12;
+ const endPM=endHour >= 12;
+ // Evening DPR: same calendar date, starting in AM and ending in PM.
+ if(dayDiff===0 && startAM && endPM) return "Evening";
+ // Morning DPR: end date is one day later, starting in PM and ending in AM.
+ if(dayDiff===1 && startPM && endAM) return "Morning";
+ return "";
+}
+function makeDprNo(dateKey){
  const [y,m,d]=dateKey.split("-");
- return `NG-1-${d}${m}${y}-${seq}`;
+ const suffix=dprShiftSuffix();
+ return `NG-1-${d}${m}${y}${suffix?"-"+suffix:""}`;
 }
 function updateDprNoForDate(){
- if(!db){dprNo.value=makeDprNo(dprDateKey(),1);return;}
- const key=dprDateKey();
- const req=db.transaction("dprs").objectStore("dprs").getAll();
- req.onsuccess=()=>{
-  const nums=req.result.filter(x=>(x.fromDT||"").slice(0,10)===key).map(x=>{
-   const m=String(x.dprNo||"").match(/-(\d+)$/); return m?Number(m[1]):0;
-  }).filter(n=>n>0);
-  const seq=(nums.length?Math.max(...nums):0)+1;
-  dprNo.value=makeDprNo(key,seq);
- };
+ dprNo.value=makeDprNo(dprDateKey());
 }
 function clearStatuses(){document.querySelectorAll('input[type=radio]').forEach(x=>x.checked=false);}
 function resetForm(){
@@ -154,38 +166,84 @@ function resetForm(){
 function renderMaintenance(){
  const el=maintenanceRows;el.innerHTML="";
  if(!maintenance.length) addMaintenanceRow(false);
+ const table=document.createElement("table");
+ table.className="maintenance-table";
+ table.innerHTML=`<thead><tr><th>Sl. No.</th><th>Equipment Name</th><th>Jobs Carried Out</th><th>Action</th></tr></thead><tbody></tbody>`;
+ const tbody=table.querySelector("tbody");
  maintenance.forEach((r,i)=>{
-  const div=document.createElement("div");div.className="row";div.innerHTML=`<div class="rowhead"><b>Sr. No. ${i+1}</b>${maintenance.length>1?'<button class="danger" type="button">Remove</button>':''}</div>
-  <div class="field"><label>Equipment Name</label><input class="m-eq" value="${esc(r.eq)}"></div>
-  <div class="field"><label>Issues Observed</label><textarea class="m-issue">${esc(r.issue)}</textarea></div>
-  <div class="field"><label>Jobs Carried Out</label><textarea class="m-job">${esc(r.job)}</textarea></div>
-  <div class="field"><label>Spares Required</label><textarea class="m-spare">${esc(r.spare)}</textarea></div>`;
-  div.querySelectorAll("input,textarea").forEach((x,j)=>x.addEventListener("input",()=>{let k=["eq","issue","job","spare"][j];r[k]=x.value;}));
-  const rm=div.querySelector(".danger");if(rm)rm.onclick=()=>{maintenance.splice(i,1);renderMaintenance()};
-  el.appendChild(div);
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td data-label="Sl. No."><b>${i+1}</b></td><td data-label="Equipment Name"><input class="m-eq" value="${esc(r.eq)}" placeholder="Equipment name"></td><td data-label="Jobs Carried Out"><textarea class="m-job" placeholder="Enter detailed maintenance activity / jobs carried out">${esc(r.job)}</textarea></td><td data-label="Action">${maintenance.length>1?'<button class="danger" type="button">Remove</button>':'—'}</td>`;
+  tr.querySelector(".m-eq").addEventListener("input",e=>r.eq=e.target.value);
+  tr.querySelector(".m-job").addEventListener("input",e=>r.job=e.target.value);
+  const rm=tr.querySelector(".danger");if(rm)rm.onclick=()=>{maintenance.splice(i,1);renderMaintenance()};
+  tbody.appendChild(tr);
  });
+ el.appendChild(table);
 }
 function addMaintenanceRow(render=true){maintenance.push({eq:"",issue:"",job:"",spare:""});if(render)renderMaintenance()}
 function renderGeneric(){genericRows.innerHTML="";if(!generic.length)generic.push("");generic.forEach((v,i)=>{const d=document.createElement("div");d.className="row";d.innerHTML=`<div class="rowhead"><b>Sr. No. ${i+1}</b>${generic.length>1?'<button class="danger" type="button">Remove</button>':''}</div><textarea>${esc(v)}</textarea>`;d.querySelector("textarea").oninput=e=>generic[i]=e.target.value;let b=d.querySelector("button");if(b)b.onclick=()=>{generic.splice(i,1);renderGeneric()};genericRows.appendChild(d)})}
 function renderRows(){renderMaintenance();renderGeneric();}
 function esc(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 addMaintenance.onclick=()=>addMaintenanceRow(true);addGeneric.onclick=()=>{generic.push("");renderGeneric()};
-newDpr.onclick=resetForm; fromDT.addEventListener("change",updateDprNoForDate);
-function data(){
- return {id:Date.now(),dprNo:dprNo.value,rig:rig.value,fromDT:fromDT.value,toDT:toDT.value,spudDate:spudDate.value,targetDepth:targetDepth.value,currentDepth:currentDepth.value,currentOperation:currentOperation.value,shutdown:shutdown.value,shutdownReason:shutdownReason.value,radios:{...equipmentStatus,...hvacStatus},energy:energy.value,hsdPP:hsdPP.value,hsdDSA:hsdDSA.value,hsdOther:hsdOther.value,pol:pol.value,grease:grease.value,air:air.value,maintenance,generic,criticalRequirement:criticalRequirement.value,materialsReceived:materialsReceived.value,materialsSent:materialsSent.value,dayCrew:dayCrew.value,nightCrew:nightCrew.value};
+newDpr.onclick=resetForm; fromDT.addEventListener("change",updateDprNoForDate);toDT.addEventListener("change",updateDprNoForDate);
+function data(id){
+ return {id:id ?? Date.now(),dprNo:dprNo.value,rig:rig.value,fromDT:fromDT.value,toDT:toDT.value,spudDate:spudDate.value,targetDepth:targetDepth.value,currentDepth:currentDepth.value,currentOperation:currentOperation.value,shutdown:shutdown.value,shutdownReason:shutdownReason.value,radios:{...equipmentStatus,...hvacStatus},energy:energy.value,hsdPP:hsdPP.value,hsdDSA:hsdDSA.value,hsdOther:hsdOther.value,pol:pol.value,grease:grease.value,air:air.value,maintenance,generic,criticalRequirement:criticalRequirement.value,materialsReceived:materialsReceived.value,materialsSent:materialsSent.value,dayCrew:dayCrew.value,nightCrew:nightCrew.value};
 }
-save.onclick=()=>{if(!db)return alert("Database is still starting. Try again.");const d=data();const tx=db.transaction("dprs","readwrite");tx.objectStore("dprs").put(d);tx.oncomplete=()=>alert("DPR saved: "+d.dprNo)};
+save.onclick=()=>{
+ if(!db)return alert("Database is still starting. Try again.");
+ updateDprNoForDate();
+ const req=db.transaction("dprs").objectStore("dprs").getAll();
+ req.onsuccess=()=>{
+  const existing=req.result.find(x=>x.fromDT===fromDT.value && x.toDT===toDT.value);
+  const d=data(existing ? existing.id : undefined);
+  const tx=db.transaction("dprs","readwrite");
+  tx.objectStore("dprs").put(d);
+  tx.oncomplete=()=>alert((existing ? "DPR updated: " : "DPR saved: ")+d.dprNo);
+ };
+};
 function fmt(v){if(!v)return "";const d=new Date(v);if(isNaN(d))return v;const p=n=>String(n).padStart(2,"0");return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;}
 function statusText(name, value){return `${name}: ${value||"—"}`;}
 function report(d){
- const lines=["MAINTENANCE SHORT DPR","RIG: "+d.rig,"DPR No.: "+d.dprNo,"DATE & TIME: "+fmt(d.fromDT)+" TO "+fmt(d.toDT),"SPUD DATE: "+d.spudDate,"TARGET DEPTH: "+d.targetDepth,"CURRENT DEPTH: "+d.currentDepth,"CURRENT OPERATION: "+d.currentOperation,"RIG SHUTDOWN STATUS: "+(d.shutdown||"—"),"Reason: "+(d.shutdownReason||"—"),"","2. CRITICAL EQUIPMENT STATUS"];
- equipmentGroups.forEach((g,gi)=>{lines.push((gi+1)+". "+g[0]);g[1].forEach((n,ii)=>lines.push(statusText(n,d.radios["eq_"+gi+"_"+ii])))});
- lines.push("","3. HVAC STATUS");hvacGroups.forEach((g,gi)=>{lines.push((gi+1)+". "+g[0]);g[1].forEach((n,ii)=>lines.push(statusText(n,d.radios["hv_"+gi+"_"+ii])));});
- lines.push("","4. CRITICAL OPERATIONAL PARAMETERS","Total Energy Generated (MWHr): "+d.energy,"Total HSD Consumed – Power Pack (KL): "+d.hsdPP,"Total HSD Issued – DSA Genset (KL): "+d.hsdDSA,"HSD Issued to Other Dept (KL): "+d.hsdOther,"POL Consumption (Ltr): "+d.pol,"Grease Consumption (Kg): "+d.grease,"Air Pressure (Kg/cm²): "+d.air,"","5. MAINTENANCE JOB / ISSUE — EQUIPMENT SPECIFIC");
- d.maintenance.forEach((r,i)=>{lines.push("Sr. No.: "+(i+1),"Equipment Name: "+r.eq,"Issues Observed: "+r.issue,"Jobs Carried Out: "+r.job,"Spares Required: "+r.spare,"")});
- lines.push("6. GENERIC JOBS CARRIED OUT");d.generic.forEach((x,i)=>lines.push((i+1)+". "+x));
- lines.push("","7. INVENTORY / REQUIREMENT","URGENT / CRITICAL REQUIREMENT:",d.criticalRequirement||"—","","MATERIALS RECEIVED FROM BASE:",d.materialsReceived||"—","","MATERIALS SENT TO BASE:",d.materialsSent||"—");
- lines.push("8. CREW DETAILS","DAY SHIFT: "+d.dayCrew,"NIGHT SHIFT: "+d.nightCrew,"","END OF DPR");return lines.join("\n");
+ const lines=["MAINTENANCE SHORT DPR","RIG: "+d.rig,"DPR No.: "+d.dprNo,"DATE & TIME: "+fmt(d.fromDT)+" TO "+fmt(d.toDT),"SPUD DATE: "+d.spudDate,"TARGET DEPTH: "+d.targetDepth,"CURRENT DEPTH: "+d.currentDepth,"CURRENT OPERATION: "+d.currentOperation,"RIG SHUTDOWN STATUS: "+(d.shutdown||"—"),"Reason: "+(d.shutdownReason||"—"),"","2. CRITICAL EQUIPMENT STATUS","","  A. RUNNING:"];
+ const buckets={"RUN":[],"S/B":[],"U/M":[]};
+ equipmentGroups.forEach((g,gi)=>{
+  if(g[0]==="NGR") return;
+  const byStatus={"RUN":[],"S/B":[],"U/M":[]};
+  g[1].forEach((n,ii)=>{const st=d.radios["eq_"+gi+"_"+ii];if(byStatus[st])byStatus[st].push(n)});
+  Object.keys(buckets).forEach(st=>{if(byStatus[st].length)buckets[st].push(g[0]+" – "+byStatus[st].join(", "))});
+ });
+ const statusLabels=["RUN","S/B","U/M"], statusLetters=["A","B","C"];
+ statusLabels.forEach((st,idx)=>{
+  if(idx>0) lines.push("","  "+statusLetters[idx]+". "+(st==="RUN"?"RUNNING:":st+":"));
+  if(buckets[st].length) lines.push(...buckets[st].map(x=>"    "+x)); else lines.push("    —");
+ });
+ const ngrGroup=equipmentGroups.find(g=>g[0]==="NGR");
+ if(ngrGroup){
+  const vals=ngrGroup[1].map((n,ii)=>d.radios["eq_"+equipmentGroups.indexOf(ngrGroup)+"_"+ii]).filter(Boolean);
+  if(vals.length){lines.push("","  D. NGR STATUS:");ngrGroup[1].forEach((n,ii)=>{const v=d.radios["eq_"+equipmentGroups.indexOf(ngrGroup)+"_"+ii];if(v)lines.push("    "+n+" – "+v)});}
+ }
+ lines.push("","3. HVAC STATUS","");
+ hvacGroups.forEach((g,gi)=>{
+  if(gi>0) lines.push("");
+  lines.push("  "+String.fromCharCode(65+gi)+". "+g[0]);
+  g[1].forEach((n,ii)=>lines.push("    "+statusText(n,d.radios["hv_"+gi+"_"+ii])));
+ });
+ lines.push("","4. CRITICAL OPERATIONAL PARAMETERS","");
+ [["Total Energy Generated (MWHr)",d.energy],["Total HSD Consumed – Power Pack (KL)",d.hsdPP],["Total HSD Issued – DSA Genset (KL)",d.hsdDSA],["HSD Issued to Other Dept (KL)",d.hsdOther],["POL Consumption (Ltr)",d.pol],["Grease Consumption (Kg)",d.grease],["Air Pressure (Kg/cm²)",d.air]].forEach((a,i)=>lines.push("  "+String.fromCharCode(65+i)+". "+a[0]+": "+a[1]));
+ lines.push("","5. MAINTENANCE ACTIVITY","");
+ d.maintenance.forEach((r,i)=>{lines.push("  "+String.fromCharCode(65+i)+". "+(r.eq||"—"),"","    "+(r.job||"—"));if(i<d.maintenance.length-1)lines.push("")});
+ lines.push("","6. GENERIC JOBS CARRIED OUT","");
+ d.generic.forEach((x,i)=>{lines.push("  "+String.fromCharCode(65+i)+". "+x);if(i<d.generic.length-1)lines.push("")});
+ lines.push("","7. INVENTORY / REQUIREMENT","","  A. URGENT / CRITICAL REQUIREMENT:","    "+(d.criticalRequirement||"—"),"","  B. MATERIALS RECEIVED FROM BASE:","    "+(d.materialsReceived||"—"),"","  C. MATERIALS SENT TO BASE:","    "+(d.materialsSent||"—"));
+ lines.push("","8. CREW DETAILS","");
+ const crewList=(v)=>String(v||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ const dayCrew=crewList(d.dayCrew), nightCrew=crewList(d.nightCrew);
+ lines.push("  A. DAY SHIFT:");
+ if(dayCrew.length) dayCrew.forEach((x,i)=>lines.push("    "+(i+1)+". "+x)); else lines.push("    —");
+ lines.push("");
+ lines.push("  B. NIGHT SHIFT:");
+ if(nightCrew.length) nightCrew.forEach((x,i)=>lines.push("    "+(i+1)+". "+x)); else lines.push("    —");
+ lines.push("","END OF DPR");return lines.join("\n");
 }
 whatsapp.onclick=async()=>{const text=report(data());try{if(navigator.share)await navigator.share({title:"Maintenance Short DPR",text});else throw 0}catch(e){await navigator.clipboard.writeText(text);alert("Complete DPR copied. Paste it into WhatsApp.");}};
 function showHistory(){
